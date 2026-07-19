@@ -12,7 +12,7 @@ To run:
 ./dmaProxyTest
 ```
 
-If /dev/dma_proxt_tx & /dev/dma_proxt_rx don't have read write permissions for regular users, eun as root.
+If /dev/dma_proxt_tx & /dev/dma_proxt_rx don't have read write permissions for regular users, run as root.
 
 ```
 sudo ./dmaProxyTest
