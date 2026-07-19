@@ -2,13 +2,13 @@
 
 ## First Things First
 
-The fpga project was created in Vivado 2024.2 and the .tcl script to reproduce it was also made with this version. In all the sample code below I will use this version. If you are using a lter version, substitute your Vivado version number in where appropriate.
+The fpga project was created in Vivado 2024.2 and the .tcl script to reproduce it was also made with this version. In all the sample code below I will use this version. If you are using a later version, substitute your Vivado version number in where appropriate.
 
-I use a C:\Development folder to keep all my projects in so I will write these instructions as if I cloned this repo into the C:\Development\KR260Projects folder. If you use a different foilder, update the sample code below to match your directory structure.
+I use a C:\Development folder to keep all my projects in so I will write these instructions as if I cloned this repo into the C:\Development\KR260Projects folder. If you use a different folder, update the sample code below to match your directory structure.
 
 All of the development was done on Windows except where anything had to be compiled on the Kria board itself (since it is an Arm system). It is possible to set up a cross comiple project on WSL to build everything, but that is beyond the scope of this demo.
 
-For the Kria I used the Ubuntu 22.4 LTS image available here: [Install Ubuntu On AMD](https://ubuntu.com/download/amd). If it doesnt come with them installed allready, use apt to instal gcc and g++ along with freepascal.
+For the Kria I used the Ubuntu 22.4 LTS image available here: [Install Ubuntu On AMD](https://ubuntu.com/download/amd). If it doesnt come with them installed already, use apt to instal gcc and g++ along with freepascal.
 
 ## Recreate Vivado Project And Block Diagram
 
@@ -17,7 +17,7 @@ The fpga project was created in Vivado 2024.2 and the .tcl script to reproduce i
 **NOTE:** When describing the paths we use a forward slash, "/", as the path delimiter.
 
 1. Open Vivado, but do not open any project.
-1. In the Tcl console change to the approprite directory:
+1. In the Tcl console change to the appropriate directory:
 
    cd c:/Development/KR260Projects/KriaAxiDma
 
@@ -27,9 +27,9 @@ The fpga project was created in Vivado 2024.2 and the .tcl script to reproduce i
 
 This will recreate the project, and the hdl wrapper, but you will still need to generate the output products for the block diagram.
 
-Open the block design, axi_dma_bd, and find it in the Design Sources. It should be under the hdl warapper. Right click and select Generate Output Products. For Sysnthesis Options choose global and click generate.
+Open the block design, axi_dma_bd, and find it in the Design Sources. It should be under the hdl warapper. Right click and select Generate Output Products. For Synthesis Options choose global and click generate.
 
-After that you should be able to create the bitstream and export the hardware to a .xsa file (File -> Export -> Export Hardware...). Remember to include the bitstream.
+After that you should be able to create the bit stream and export the hardware to a .xsa file (File -> Export -> Export Hardware...). Remember to include the bit stream.
 
 When I do it I export the .xsa file as
 
@@ -37,7 +37,7 @@ When I do it I export the .xsa file as
  C:\Development\KR260Projects\KriaAxiDma\axi_dma_demo\outputs\axi_dma_demo.xsa
 ```
 
-You may also need to locate the .bin file. If the bitstream creation was successful it wil be in the _axi_dma_demo\axi_dma_demo.runs\impl_1_ directory (or some folder with a simuilar name). The file name will be _axi_dma_bd_wrapper.bin_. Copy it to the output directory with the .xsa file and ranme it to _axi_dma_demo.bin_.
+You may also need to locate the .bin file. If the bit stream creation was successful it wil be in the _axi_dma_demo\axi_dma_demo.runs\impl_1_ directory (or some folder with a similar name). The file name will be _axi_dma_bd_wrapper.bin_. Copy it to the output directory with the .xsa file and rename it to _axi_dma_demo.bin_.
 
 ## Create Firmware Overlay From .xsa and .bin Files
 
@@ -55,7 +55,7 @@ This should gice you a c:\Development\device-tree-xlnx directory on yur PC with 
 
 ### Use xsct To Create The initial pl.dtsi File.
 
-Next you need to open the vitas xct console. By default Vitis is installed in C:\\Xilinx\\Vitis\[version\]
+Next you need to open the Vitas xsct console. By default Vitis is installed in C:\\Xilinx\\Vitis\[version\]
 
 Open a command prompt (cmd.exe, not PowerShell). Before using the xsct you are going to have to set up a Vitis environment.
 
@@ -106,10 +106,10 @@ There should now be a pl.dtsi device-tree file in the generate_target directory.
 
 You will need to update the pl.dtsi to do two things.
 
-1. Reserve Memory Buffer For ther Proxy Buffers
+1. Reserve Memory Buffer For the Proxy Buffers
 1. Add the dma proxy entry
 
-Add this to the top of your file to reerve the memory.
+Add this to the top of your file to reserve the memory.
 
 ```
 /* Reserve memory for DMA Proxy Buffers */
@@ -147,7 +147,7 @@ You can see the complete pl.dtsi file at the end of this document.
 
 Log into the KRIA and create a /home/ubuntu/development/axi_dma_demo directory
 
-Now on ypour PC you will need to copy up your .dtsi and .bin files.
+Now on your PC you will need to copy up your .dtsi and .bin files.
 
 ```
 cd C:\Development\KR260Projects\KriaAxiDma\axi_dma_demo\outputs
@@ -163,7 +163,7 @@ cd /home/ubuntu/development/axi_dma_demo
 dtc -@ -O dtb -o axi_dma_demo.dtbo pl.dtsi
 ```
 
-If successfulf you can remove the .dtdi file and create the shell.json
+If successful you can remove the .dtdi file and create the shell.json
 
 ```
 rm pl.dtsi
@@ -183,7 +183,7 @@ Verify the firmware overlay is installed by listing apps. it will have the folde
 sudo xmutil listapps
 ```
 
-You should see somethign liek the out put below:
+You should see something like the out put below:
 
 ```
 Accelerator          Accel_type                            Base           Base_type      #slots(PL+AIE)         Active_slot
@@ -225,7 +225,7 @@ In the /home/ubuntu/development directory clone the Git repository and cd to the
 ~$ cd software-prototypes/linux-user-space-dma/Software/Kernel
 ```
 
-Now create a Makefile with nano. Make is fussy when it comes to spaces vs tabs so when you copy and paste the text below you may need to massge it a little.
+Now create a Makefile with nano. Make is fussy when it comes to spaces vs tabs so when you copy and paste the text below you may need to massage it a little.
 
 ```
 INC = /home/ubuntu/development/software-prototypes/linux-user-space-dma/Software/Common/
@@ -282,9 +282,9 @@ If you have enabled trace logging you can inspect the output. To do this open a 
 sudo dmesg -w
 ```
 
-All the trace log messages from the kernal module should now print on this termianl.
+All the trace log messages from the kernel module should now print on this terminal.
 
-Now we can load the kernal object.
+Now we can load the kernel object.
 
 ```
 sudo insmod dma-proxy.ko
@@ -298,13 +298,13 @@ lsmod | grep dma
 
 You should see a dma_proxy in the list.
 
-noew verify the devices are there.
+Now verify the devices are there.
 
 ```
 ls -al /dev/dma*
 ```
 
-Running this command should produce an outpout similar to this.
+Running this command should produce an output similar to this.
 
 ```
 crw------- 1 root root 506, 1 Jul 18 18:33 /dev/dma_proxy_rx
@@ -312,7 +312,7 @@ crw------- 1 root root 506, 0 Jul 18 18:33 /dev/dma_proxy_tx
 crw------- 1 root root 507, 0 Jul 18 17:49 /dev/dmaproxy
 ```
 
-Note the precense of the dma_proxy_tx & dma_proxy_rx we defined earlier in our pl.dtsi file. Note also that these two character devices can only bae accessed by root so any application that uses them must run as root. To get around this we set the perimassions on the devices like so.
+Note the presence of the dma_proxy_tx & dma_proxy_rx we defined earlier in our pl.dtsi file. Note also that these two character devices can only bae accessed by root so any application that uses them must run as root. To get around this we set the permissions on the devices like so.
 
 ```
 
@@ -350,7 +350,7 @@ Then use make to build the app
 make
 ```
 
-Now you shluld see an app file, dma-proxy-test, in your directory. The application takes three arguments. The first is the number of DMA transfers to perform, the second is the size (in KB) of each transfer, and finally the last indicates whether to verify the transfer by comparg the data read back to the data written.
+Now you should see an app file, dma-proxy-test, in your directory. The application takes three arguments. The first is the number of DMA transfers to perform, the second is the size (in KB) of each transfer, and finally the last indicates whether to verify the transfer by comparing the data read back to the data written.
 
 Run the application like so
 
@@ -373,77 +373,7 @@ DMA proxy test complete
 
 TX#0 and RX#0 represent the starting addresses of the respective buffers.
 
-## Build dmareg
-
-cd to KR260Projects/test_dma directory
-
-```
-
-fpc -odmareg dmareg.dpr
-
-```
-
-## Git Access
-
-You need to do this every time you log on. Must be a better eway - look into it!
-
-Start ssh agent:
-
-```
-
-eval "$(ssh-agent -s)"
-
-```
-
-Add private key:
-
-```
-
-ssh-add ~/.ssh/<my_key_Name>
-
-```
-
-Clone using ssh:
-
-```
-
-git clone ssh://git@ssh.github.com:443/ntavendale/KR260Projects.git
-
-```
-
-## How to create dma_proxy Kernel Module (Xilinx provided driver)
-
-```
-
-~$ git clone https://github.com/Xilinx-Wiki-Projects/software-prototypes.git
-~$ cd software-prototypes/linux-user-space-dma/Software/Kernel
-
-```
-
-Create a Makefile
-
-```
-
-INC = /home/ubuntu/software-prototypes/linux-user-space-dma/Software/Common/
-EXTRA_CFLAGS += -I$(INC)
-
-obj-m += dma-proxy.o
-all:
-make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
-clean:
-make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
-
-```
-
-make the driver:
-
-```
-
-~$ make
-
-```
-
-# PetaLinux/Yocto
+# Note For PetaLinux/Yocto Users
 
 This dma-proxy driver doesn't build on Linux Kernel 6.4.0 and above, so a fix must be applied to dma-proxy.c https://github.com/Xilinx-Wiki-Projects/software-prototypes/pull/12
 
@@ -459,129 +389,28 @@ local_class_p = class_create(THIS_MODULE, DRIVER_NAME);
 
 ```
 
-The ubuntu image for the kr260 is kernal 5.15.0-1027-xilinx-zynqmp so you won't need to do this on ubuntu.
-
-Successful compilation produces a dma-proxy.ko object file. Load the module into Linux:
-
-```
-
-~$ sudo insmod dma-proxy.ko
-
-```
-
-Verify it is installed
-
-```
-
-~$ lsmod | grep dma
-
-```
-
-Build and Run the dma-proxy-test Application:
-
-```
-
-~$ cd software-prototypes/linux-user-space-dma/Software/User
-
-```
-
-Create a Makefile (replace tabs with spaces, set Optimization level -O# and Debugging level -g#)
-
-```
-
-INC = /home/ubuntu/software-prototypes/linux-user-space-dma/Software/Common/
-EXTRA_CFLAGS += -I$(INC)
-
-obj-m += dma-proxy-test.o
-all:
-cc -o dma-proxy-test dma-proxy-test.c -I /home/ubuntu/software-prototypes/linux-user-space-dma/Software/Common/ -O0 -g3
-clean:
-make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
-
-```
-
-make the test application:
-
-```
-
-~$ make
-
-```
-
-run the test application (first parameter is number of transfers, 2nd number is number of KB per transfer, 3rd number is 1 to enable verify, 0 to disable verify:
-
-```
-
-~$ sudo ./dma-proxy-test 1 128 1
-
-```
-
-# MF_FIC version of dma-proxy-test
-
-This is a heavily modified version of the xilinx provided dma-proxy-test application. It has been rewritten in C++23 and encapsulates the DMA functionality into a class that should be easier to port to other applications. It also builds with cmake and brings in numerous bug fixes.
-
-## Steps to build MF_FIC dma-proxy-test
-
-First, ensure the BUFFER_SIZE in MF_FIC/include/dma-proxy.hpp matches the buffer size in Common/dma-proxy.h
-
-Then use CMake to build inside the MF_FIC directory
-
-```
-
-~$ cmake --preset analysis --fresh
-~$ cmake --build --preset analysis
-
-```
-
-The final resulting executable takes the same arguments
-
-```
-
-~$ sudo ./dma-proxy-test 1 128 0
-
-```
-
-/dts-v1/;
-/plugin/;
-
-/_ Reserve memory for DMA Proxy Buffers _/
-&{/} {
-reserved_memory {
-#address-cells = <2>;
-#size-cells = <2>;
-ranges;
-
-        dma_proxy_reserved: buffer {
-            compatible = "shared-dma-pool";
-            size = <0x0 0x20000000>; /* 512MB */
-            alignment = <0x0 0x00001000>; /* 4KB alignment */
-            reusable;
-        };
-    };
-
-};
+The ubuntu image for the kr260 is kernel 5.15.0-1027-xilinx-zynqmp so you won't need to do this on ubuntu.
 
 ## The Complete pl.dtsi File
 
-This is the pl.dtsi file, complete with alterations for proxy-dma, that I used for this demo. Note that axi_dma is the name I gave the AXI Direct memory Access IP block in my initial Vivadio design.
+This is the pl.dtsi file, complete with alterations for proxy-dma, that I used for this demo. Note that axi_dma is the name I gave the AXI Direct memory Access IP block in my initial Vivado design.
 
 ```
+/*
+ * CAUTION: This file is automatically generated by Xilinx.
+ * Version: XSCT 2024.2.1
+ * Today is: Sat Jul 18 11:29:13 2026
+ */
 
-/\*
-
-- CAUTION: This file is automatically generated by Xilinx.
-- Version: XSCT 2024.2.1
-- Today is: Sat Jul 18 11:29:13 2026
-  \*/
 
 /dts-v1/;
 /plugin/;
-/_ Reserve memory for DMA Proxy Buffers _/
+/* Reserve memory for DMA Proxy Buffers */
 &{/} {
-reserved_memory {
-#address-cells = <2>;
-#size-cells = <2>;
-ranges;
+    reserved_memory {
+        #address-cells = <2>;
+        #size-cells = <2>;
+        ranges;
 
         dma_proxy_reserved: buffer {
             compatible = "shared-dma-pool";
@@ -590,73 +419,69 @@ ranges;
             reusable;
         };
     };
-
 };
 &fpga_full {
-firmware-name = "axi_dma_demo.bit.bin";
-resets = <&zynqmp_reset 116>;
-clocking0: clocking0 {
-#clock-cells = <0>;
-assigned-clock-rates = <99999001>;
-assigned-clocks = <&zynqmp_clk 71>;
-clock-output-names = "fabric_clk";
-clocks = <&zynqmp_clk 71>;
-compatible = "xlnx,fclk";
-};
-clocking1: clocking1 {
-#clock-cells = <0>;
-assigned-clock-rates = <99999001>;
-assigned-clocks = <&zynqmp_clk 72>;
-clock-output-names = "fabric_clk";
-clocks = <&zynqmp_clk 72>;
-compatible = "xlnx,fclk";
-};
-afi0: afi0 {
-compatible = "xlnx,afi-fpga";
-config-afi = < 0 0>, <1 0>, <2 0>, <3 0>, <4 0>, <5 0>, <6 0>, <7 0>, <8 0>, <9 0>, <10 0>, <11 0>, <12 0>, <13 0>, <14 0xa00>, <15 0x000>;
-resets = <&zynqmp_reset 116>, <&zynqmp_reset 117>, <&zynqmp_reset 118>, <&zynqmp_reset 119>;
-};
-};
-&amba {
-#address-cells = <2>;
-#size-cells = <2>;
-axi_dma: dma@a0000000 {
-#dma-cells = <1>;
-clock-names = "m_axi_mm2s_aclk", "m_axi_s2mm_aclk", "s_axi_lite_aclk";
-clocks = <&zynqmp_clk 71>, <&zynqmp_clk 71>, <&zynqmp_clk 71>;
-compatible = "xlnx,axi-dma-7.1", "xlnx,axi-dma-1.00.a";
-interrupt-names = "mm2s_introut", "s2mm_introut";
-interrupt-parent = <&gic>;
-interrupts = <0 89 4 0 90 4>;
-reg = <0x0 0xa0000000 0x0 0x10000>;
-xlnx,addrwidth = <0x40>;
-xlnx,sg-length-width = <0x1a>;
-dma-channel@a0000000 {
-compatible = "xlnx,axi-dma-mm2s-channel";
-dma-channels = <0x1>;
-interrupts = <0 89 4>;
-xlnx,datawidth = <0x20>;
-xlnx,device-id = <0x0>;
-};
-dma-channel@a0000030 {
-compatible = "xlnx,axi-dma-s2mm-channel";
-dma-channels = <0x1>;
-interrupts = <0 90 4>;
-xlnx,datawidth = <0x20>;
-xlnx,device-id = <0x0>;
-};
-};
+	firmware-name = "axi_dma_demo.bit.bin";
+	resets = <&zynqmp_reset 116>;
+	clocking0: clocking0 {
+		#clock-cells = <0>;
+		assigned-clock-rates = <99999001>;
+		assigned-clocks = <&zynqmp_clk 71>;
+		clock-output-names = "fabric_clk";
+		clocks = <&zynqmp_clk 71>;
+		compatible = "xlnx,fclk";
+	};
+	clocking1: clocking1 {
+		#clock-cells = <0>;
+		assigned-clock-rates = <99999001>;
+		assigned-clocks = <&zynqmp_clk 72>;
+		clock-output-names = "fabric_clk";
+		clocks = <&zynqmp_clk 72>;
+		compatible = "xlnx,fclk";
+	};
+	afi0: afi0 {
+		compatible = "xlnx,afi-fpga";
+		config-afi = < 0 0>, <1 0>, <2 0>, <3 0>, <4 0>, <5 0>, <6 0>, <7 0>, <8 0>, <9 0>, <10 0>, <11 0>, <12 0>, <13 0>, <14 0xa00>, <15 0x000>;
+		resets = <&zynqmp_reset 116>, <&zynqmp_reset 117>, <&zynqmp_reset 118>, <&zynqmp_reset 119>;
+	};
 };
 &amba {
-dma_proxy {
-compatible = "xlnx,dma_proxy";
-dmas = <&axi_dma 0 &axi_dma 1>;
-dma-names = "dma_proxy_tx", "dma_proxy_rx";
+	#address-cells = <2>;
+	#size-cells = <2>;
+	axi_dma: dma@a0000000 {
+		#dma-cells = <1>;
+		clock-names = "m_axi_mm2s_aclk", "m_axi_s2mm_aclk", "s_axi_lite_aclk";
+		clocks = <&zynqmp_clk 71>, <&zynqmp_clk 71>, <&zynqmp_clk 71>;
+		compatible = "xlnx,axi-dma-7.1", "xlnx,axi-dma-1.00.a";
+		interrupt-names = "mm2s_introut", "s2mm_introut";
+		interrupt-parent = <&gic>;
+		interrupts = <0 89 4 0 90 4>;
+		reg = <0x0 0xa0000000 0x0 0x10000>;
+		xlnx,addrwidth = <0x40>;
+		xlnx,sg-length-width = <0x1a>;
+		dma-channel@a0000000 {
+			compatible = "xlnx,axi-dma-mm2s-channel";
+			dma-channels = <0x1>;
+			interrupts = <0 89 4>;
+			xlnx,datawidth = <0x20>;
+			xlnx,device-id = <0x0>;
+		};
+		dma-channel@a0000030 {
+			compatible = "xlnx,axi-dma-s2mm-channel";
+			dma-channels = <0x1>;
+			interrupts = <0 90 4>;
+			xlnx,datawidth = <0x20>;
+			xlnx,device-id = <0x0>;
+		};
+	};
 };
+&amba {
+    dma_proxy {
+        compatible = "xlnx,dma_proxy";
+        dmas = <&axi_dma 0  &axi_dma 1>;
+        dma-names = "dma_proxy_tx", "dma_proxy_rx";
+    };
 };
 
-```
-
-```
 
 ```
