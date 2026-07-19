@@ -51,7 +51,7 @@ ON YOUR PC: Ensure device-tree-xlnx is installed on system and matches Vivado/Vi
 > git checkout xlnx_rel_v2024.2
 ```
 
-This should gice you a c:\Development\device-tree-xlnx directory on yur PC with the appropriate brach checked out.
+This should give you a c:\Development\device-tree-xlnx directory on your PC with the appropriate brach checked out.
 
 ### Use xsct To Create The initial pl.dtsi File.
 
