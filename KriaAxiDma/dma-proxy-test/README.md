@@ -1,4 +1,4 @@
-# dma-proxy-test
+# dmaProxyTest
 
 Test application to read contents of DMA registers by mapping into /dev/mem.
 
