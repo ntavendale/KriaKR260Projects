@@ -1,6 +1,6 @@
 # dmaProxyTest
 
-Test application to read contents of DMA registers by mapping into /dev/mem.
+Test application to read write from proxy dma channels.
 
 To build:
 ```
