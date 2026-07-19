@@ -4,11 +4,11 @@
 
 The fpga project was created in Vivado 2024.2 and the .tcl script to reproduce it was also made with this version. In all the sample code below I will use this version. If you are using a later version, substitute your Vivado version number in where appropriate.
 
-I use a C:\Development folder to keep all my projects in so I will write these instructions as if I cloned this repo into the C:\Development\KR260Projects folder. If you use a different folder, update the sample code below to match your directory structure.
+I use a C:\Development folder to keep all my projects in so I will write these instructions as if I cloned this repo into the C:\Development\KriaKR260Projects folder. If you use a different folder, update the sample code below to match your directory structure.
 
-All of the development was done on Windows except where anything had to be compiled on the Kria board itself (since it is an Arm system). It is possible to set up a cross comiple project on WSL to build everything, but that is beyond the scope of this demo.
+All of the development was done on Windows except where anything had to be compiled on the Kria board itself (since it is an Arm system). It is possible to set up a cross compile project on WSL to build everything, but that is beyond the scope of this demo.
 
-For the Kria I used the Ubuntu 22.4 LTS image available here: [Install Ubuntu On AMD](https://ubuntu.com/download/amd). If it doesnt come with them installed already, use apt to instal gcc and g++ along with freepascal.
+For the Kria I used the Ubuntu 22.4 LTS image available here: [Install Ubuntu On AMD](https://ubuntu.com/download/amd). If it doesn't come with them installed already, use apt to instal gcc, g++, and make along with freepascal.
 
 ## Recreate Vivado Project And Block Diagram
 
@@ -19,7 +19,7 @@ The fpga project was created in Vivado 2024.2 and the .tcl script to reproduce i
 1. Open Vivado, but do not open any project.
 1. In the Tcl console change to the appropriate directory:
 
-   cd c:/Development/KR260Projects/KriaAxiDma
+   cd c:/Development/KriaKR260Projects/KriaAxiDma
 
 1. Now recreate the project:
 
@@ -34,7 +34,7 @@ After that you should be able to create the bit stream and export the hardware t
 When I do it I export the .xsa file as
 
 ```
- C:\Development\KR260Projects\KriaAxiDma\axi_dma_demo\outputs\axi_dma_demo.xsa
+ C:\Development\KriaKR260Projects\KriaAxiDma\axi_dma_demo\outputs\axi_dma_demo.xsa
 ```
 
 You may also need to locate the .bin file. If the bit stream creation was successful it wil be in the _axi_dma_demo\axi_dma_demo.runs\impl_1_ directory (or some folder with a similar name). The file name will be _axi_dma_bd_wrapper.bin_. Copy it to the output directory with the .xsa file and rename it to _axi_dma_demo.bin_.
@@ -62,7 +62,7 @@ Open a command prompt (cmd.exe, not PowerShell). Before using the xsct you are g
 First go to your outputs directory with your .xsa file.
 
 ```
-cd C:\Development\KR260Projects\KriaAxiDma\axi_dma_demo\outputs
+cd C:\Development\KriaKR260Projects\KriaAxiDma\axi_dma_demo\outputs
 ```
 
 Next run the batch file to setup your Vitis environment. You may get a file not found message. IO ignored it and everything worked just fine so you should be OK to ignore it to.
@@ -84,7 +84,7 @@ Generate outputs using XSCT console.
 **NOTE:** When describing the paths we use a forward slash, "/", as the path delimiter.
 
 ```
-xsct% hsi open_hw_design C:/Development/KR260Projects/KriaAxiDma/axi_dma_demo/outputs/axi_dma_demo.xsa
+xsct% hsi open_hw_design C:/Development/KriaKR260Projects/KriaAxiDma/axi_dma_demo/outputs/axi_dma_demo.xsa
 
 xsct% hsi set_repo_path c:/Development/device-tree-xlnx directory
 
@@ -95,7 +95,7 @@ xsct% hsi set_property CONFIG.dt_overlay true [hsi::get_os]
 # If ZOCL is used (Maybe for Multi Channel DMWA, but not for this demo, so you can skip this line)
 xsct% hsi set_property CONFIG.dt_zocl true [hsi::get_os]
 
-xsct% hsi generate_target -dir C:/Development/KR260Projects/KriaAxiDma/axi_dma_demo/outputs
+xsct% hsi generate_target -dir C:/Development/KriaKR260Projects/KriaAxiDma/axi_dma_demo/outputs
 
 xsct% hsi close_hw_design [hsi::current_hw_design]
 ```
@@ -150,7 +150,7 @@ Log into the KRIA and create a /home/ubuntu/development/axi_dma_demo directory
 Now on your PC you will need to copy up your .dtsi and .bin files.
 
 ```
-cd C:\Development\KR260Projects\KriaAxiDma\axi_dma_demo\outputs
+cd C:\Development\KriaKR260Projects\KriaAxiDma\axi_dma_demo\outputs
 scp pl.dtsi ubuntu@192.168.9.37:/home/ubuntu/development/axi_dma_demo/pl.dtsi
 scp axi_dma_demo ubuntu@192.168.9.37:/home/ubuntu/development/axi_dma_demo/axi_dma_demo.bin
 
