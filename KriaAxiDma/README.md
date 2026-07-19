@@ -41,7 +41,7 @@ You may also need to locate the .bin file. If the bit stream creation was succes
 
 ## Create Firmware Overlay From .xsa and .bin Files
 
-### Clone The xilinx Device Tre Repo
+### Clone The xilinx Device Tree Repo
 
 ON YOUR PC: Ensure device-tree-xlnx is installed on system and matches Vivado/Vitis version:
 
