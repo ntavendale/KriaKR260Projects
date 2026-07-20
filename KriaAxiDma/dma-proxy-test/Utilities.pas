@@ -12,6 +12,9 @@ type
     class function get_posix_clock_time_usec: UInt64;
   end;
 
+var
+  FStop: Integer;  
+
 implementation
 
 class function TUtilities.get_posix_clock_time_usec: UInt64;

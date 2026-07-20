@@ -46,6 +46,25 @@ begin
 
     Inc(buffer_id, BUFFER_INCREMENT);
   end;
+
+  // Start finishing up the DMA transfers that were started beginning with the 1st channel buffer.
+  while (TRUE) do
+  begin
+    // Perform the DMA transfer and check the status after it completes
+		// as the call blocks til the transfer is done.
+		fpIoctl(AChannel^.FileDescriptor, FINISH_XFER, @buffer_id);
+		if (AChannel^.ChannelBuffers[buffer_id]^.Status <> psNoError) then
+			WriteLn(Format('Proxy tx transfer error %s', [ProxyStatusToString(AChannel^.ChannelBuffers[buffer_id]^.Status)]));
+
+		// Keep track of how many transfers are in progress and how many completed
+		Dec(in_progress_count);;
+		Inc(counter);
+
+    // If all the transfers are done then exit
+    if (counter >= TransferCount) then
+			BREAK;
+    
+  end;
 end;
 
 begin

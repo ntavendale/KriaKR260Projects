@@ -53,6 +53,7 @@ type
 	  ThreadId: Uint64;
   end;
 
+function ProxyStatusToString(AProxyStatus: TProxyStatus): String;
 function IOW(AType, ANumber: Char; ADataSize: Cardinal): Cardinal;
 function IOR(AType, ANumber: Char; ADataSize: Cardinal): Cardinal;
 function FINISH_XFER: Cardinal;
@@ -61,6 +62,18 @@ function XFER: Cardinal;
 function SHOW_BUFLEN: Cardinal;
 
 implementation
+
+function ProxyStatusToString(AProxyStatus: TProxyStatus): String;
+begin
+  case AProxyStatus of
+  psNoError: Result := 'psNoError';
+  psBusy: Result := 'psBusy';
+  psTimeout: Result := 'psTimeout';
+  psError: Result := 'psError';
+  else
+    raise Exception.Create(Format('Invalid ProxyStatus: %d', [Integer(AProxyStatus)]));
+  end;
+end;
 
 // The _IOW macro is typically used as _IOW(type, number, datatype):
 // type: An 8-bit magic number, often an ASCII character, used to keep the ioctl 

@@ -11,10 +11,11 @@ uses
 
 procedure SigInt(AInput: Integer);
 begin
-	Halt;
+	FStop := 1;
 end;
 
 begin
+  FStop := 0;
   WriteLn('DMA Register consts for MM2S & S2MM');
 end.
 
