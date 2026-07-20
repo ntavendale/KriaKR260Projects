@@ -40,10 +40,17 @@ type
   PChannelBuffer = ^TChannelBuffer;
   TChannelBuffer = record
   	Buffer: array [0..(BUFFER_ARRAY_SIZE_BYTES - 1)] of Cardinal;
-	Status: TProxyStatus;
-	Length: Cardinal;
+	  Status: TProxyStatus;
+	  Length: Cardinal;
     Dummy0: Cardinal;
     Dummy1: Cardinal;
+  end;
+
+  PChannel = ^TChannel;
+  TChannel = record
+	  ChannelBuffers: array[0..(BUFFER_COUNT - 1)] of PChannelBuffer;
+	  FileDescriptor: Integer;
+	  ThreadId: Uint64;
   end;
 
 function IOW(AType, ANumber: Char; ADataSize: Cardinal): Cardinal;
