@@ -1,4 +1,5 @@
-unit TxChannel;
+{$MODE DELPHIUNICODE}
+unit RxChannel;
 
 interface 
 
