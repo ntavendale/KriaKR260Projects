@@ -8,12 +8,13 @@ uses
 
 type 
   TUtilities = class
+  private
+    class var FStop: Boolean;
   public
     class function get_posix_clock_time_usec: UInt64;
+    class Property Stop: Boolean read FStop write FStop;
   end;
 
-var
-  FStop: Integer;  
 
 implementation
 

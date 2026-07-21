@@ -202,7 +202,7 @@ List the apps again using xmutil and you should now see axi_dma_demo in Active_s
 
 ## Set Default Firmware (Optional)
 
-If you want to load your app on boot update the following file.
+If you want to load your app on boot, update the following file.
 
 ```
 /etc/dfx-mgrd/default_firmware

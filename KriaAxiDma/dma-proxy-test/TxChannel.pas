@@ -14,18 +14,19 @@ var
 
 // The following function is the transmit thread to allow the transmit and the receive channels to be
 // operating simultaneously. Some of the ioctl calls are blocking so that multiple threads are required.
-procedure TxThread(AChannel: PChannel; TestSize: Integer; AVerify: Boolean; TransferCount: Integer);
+procedure TxThread(AChannel: PChannel; TestSize: Integer; AVerify: Boolean; ATransferCount: Integer);
 
 implementation
 
-procedure TxThread(AChannel: PChannel; TestSize: Integer; AVerify: Boolean; TransferCount: Integer);
+procedure TxThread(AChannel: PChannel; TestSize: Integer; AVerify: Boolean; ATransferCount: Integer);
 var
-  i, counter, buffer_id, in_progress_count, stop_in_progress: Integer;
+  i, counter, buffer_id, in_progress_count: Integer;
+  stop_in_progress: Boolean;
 begin
   counter := 0;
-  stop_in_progress := 0;
-
+  in_progress_count := 0;
   buffer_id := 0;
+
   while (buffer_id < TX_BUFFER_COUNT) do
   begin
     AChannel^.ChannelBuffers[buffer_id]^.Length := TestSize;
@@ -41,7 +42,7 @@ begin
     //Keep track of the number of transfers that are in progress and if the number is less
 		// than the number of channel buffers then stop before all channel buffers are used
     Inc(in_progress_count);
-		if in_progress_count >= TransferCount then
+		if in_progress_count >= ATransferCount then
 			BREAK;
 
     Inc(buffer_id, BUFFER_INCREMENT);
@@ -57,13 +58,23 @@ begin
 			WriteLn(Format('Proxy tx transfer error %s', [ProxyStatusToString(AChannel^.ChannelBuffers[buffer_id]^.Status)]));
 
 		// Keep track of how many transfers are in progress and how many completed
-		Dec(in_progress_count);;
+		Dec(in_progress_count);
 		Inc(counter);
 
     // If all the transfers are done then exit
-    if (counter >= TransferCount) then
+    if (counter >= ATransferCount) then
 			BREAK;
-    
+    // If an early stop (control c or kill) has happened then exit gracefully
+		// letting all transfers queued up be completed, but it's trickier because
+		// the number of transmit vs receive channel buffers can be very different
+		// which means another X transfers need to be done gracefully shutdown the
+		// receive without leaving transfers in progress which is unrecoverable
+		if (TUtilities.Stop and not stop_in_progress)  then
+    begin
+			stop_in_progress := TRUE;
+    	//num_transfers = counter + RX_BUFFER_COUNT;
+    end;
+		
   end;
 end;
 
