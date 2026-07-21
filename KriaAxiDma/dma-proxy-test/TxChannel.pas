@@ -71,7 +71,7 @@ begin
     // the number of transmit vs receive channel buffers can be very different
     // which means another X transfers need to be done gracefully shutdown the
     // receive without leaving transfers in progress which is unrecoverable
-		if (TUtilities.Stop and not stop_in_progress)  then
+    if (TUtilities.Stop and not stop_in_progress)  then
     begin
       stop_in_progress := TRUE;
       TUtilities.TransferCount := counter + RX_BUFFER_COUNT;
