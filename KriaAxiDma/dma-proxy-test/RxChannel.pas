@@ -63,7 +63,7 @@ begin
   
   if TUtilities.Verify then
   begin
-		for i := 0 to (1-1) do // test_size / sizeof(unsigned int); i++) this is slow
+    for i := 0 to (1-1) do // test_size / sizeof(unsigned int); i++) this is slow
     begin
       if AChannel^.ChannelBuffers[buffer_id]^.Buffer[i] <> i + rx_counter then
       begin
@@ -73,6 +73,7 @@ begin
     end;
   end;
 
+  // Start back at Line 265
   Result := nil;
 end;
 
