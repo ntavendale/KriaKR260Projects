@@ -21,7 +21,7 @@ implementation
 
 function RxThread(AChannel: PChannel): Pointer;
 var
-  in_progress_count, buffer_id,rx_counter: Integer;
+  i, in_progress_count, buffer_id,rx_counter: Integer;
 begin
   in_progress_count := 0;
   buffer_id := 0;
@@ -41,9 +41,38 @@ begin
     Inc(in_progress_count);
     if in_progress_count >= TUtilities.TransferCount then
       BREAK;
-      
+
     Inc(buffer_id, BUFFER_INCREMENT);
   end;
+  
+  buffer_id := 0;
+  // Finish each queued up receive buffer and keep starting the buffer over again
+  // until all the transfers are done
+  while (TRUE) do
+  begin
+    fpIoctl(AChannel^.FileDescriptor, FINISH_XFER, @buffer_id);
+    if AChannel^.ChannelBuffers[buffer_id]^.Status <> psNoError then
+    begin
+      WriteLn(Format('Proxy rx transfer error, # transfers %d, # completed %d, # in progress %d, Status %s', [TUtilities.TransferCount, rx_counter, in_progress_count, ProxyStatusToString(AChannel^.ChannelBuffers[buffer_id]^.Status)]));
+			Exit;
+    end;
+  end;
+  
+  // Verify the data received matches what was sent (tx is looped back to tx)
+  // A unique value in the buffers is used across all transfers
+  
+  if TUtilities.Verify then
+  begin
+		for i := 0 to (1-1) do // test_size / sizeof(unsigned int); i++) this is slow
+    begin
+      if AChannel^.ChannelBuffers[buffer_id]^.Buffer[i] <> i + rx_counter then
+      begin
+        WriteLn(Format('buffer not equal, index = %d, data = %d expected data = %d', [i, AChannel^.ChannelBuffers[buffer_id]^.Buffer[i], i + rx_counter]));
+        BREAK;
+      end;
+    end;
+  end;
+
   Result := nil;
 end;
 
