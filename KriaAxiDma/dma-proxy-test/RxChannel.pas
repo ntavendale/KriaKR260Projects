@@ -91,7 +91,7 @@ begin
       CONTINUE;
     end;
     // Start the next buffer again with another transfer keeping track of
-		// the number in progress but not finished
+    // the number in progress but not finished
     fpIoctl(AChannel^.FileDescriptor, START_XFER, @buffer_id);
     
     Inc(in_progress_count, 1);
