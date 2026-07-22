@@ -56,24 +56,47 @@ begin
       WriteLn(Format('Proxy rx transfer error, # transfers %d, # completed %d, # in progress %d, Status %s', [TUtilities.TransferCount, rx_counter, in_progress_count, ProxyStatusToString(AChannel^.ChannelBuffers[buffer_id]^.Status)]));
 			Exit;
     end;
-  end;
-  
-  // Verify the data received matches what was sent (tx is looped back to tx)
-  // A unique value in the buffers is used across all transfers
-  
-  if TUtilities.Verify then
-  begin
-    for i := 0 to (1-1) do // test_size / sizeof(unsigned int); i++) this is slow
+    
+    // Verify the data received matches what was sent (tx is looped back to tx)
+    // A unique value in the buffers is used across all transfers
+    if TUtilities.Verify then
     begin
-      if AChannel^.ChannelBuffers[buffer_id]^.Buffer[i] <> i + rx_counter then
+      for i := 0 to (1-1) do // test_size / sizeof(unsigned int); i++) this is slow
       begin
-        WriteLn(Format('buffer not equal, index = %d, data = %d expected data = %d', [i, AChannel^.ChannelBuffers[buffer_id]^.Buffer[i], i + rx_counter]));
-        BREAK;
+        if AChannel^.ChannelBuffers[buffer_id]^.Buffer[i] <> i + rx_counter then
+        begin
+          WriteLn(Format('buffer not equal, index = %d, data = %d expected data = %d', [i, AChannel^.ChannelBuffers[buffer_id]^.Buffer[i], i + rx_counter]));
+          BREAK;
+        end;
       end;
     end;
+
+    // Keep track how many transfers are in progress so that only the specified number
+    // of transfers are attempted
+    Dec(in_progress_count, 1);
+
+    // If all the transfers are done then exit 
+    Inc(rx_counter, 1);
+    if (rx_counter >= TUtilities.TransferCount) then
+      BREAK;
+
+    // If the ones in progress will complete the number of transfers then don't start more
+    // but finish the ones that are already started
+    if ((rx_counter + in_progress_count) >= TUtilities.TransferCount) then
+    begin
+      // Flip to next buffer treating them as a circular list, and possibly skipping some
+      // to show the results when prefetching is not happening
+      Inc(buffer_id, BUFFER_INCREMENT);
+      buffer_id := buffer_id mod RX_BUFFER_COUNT;
+      CONTINUE;
+    end;
+    // Start the next buffer again with another transfer keeping track of
+		// the number in progress but not finished
+    fpIoctl(AChannel^.FileDescriptor, START_XFER, @buffer_id);
+    
+    Inc(in_progress_count, 1);
   end;
 
-  // Start back at Line 265
   Result := nil;
 end;
 
