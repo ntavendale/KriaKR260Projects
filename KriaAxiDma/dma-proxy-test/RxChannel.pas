@@ -33,7 +33,7 @@ begin
     // Don't worry about initializing the receive buffers as the pattern used in the
     // transmit buffers is unique across every transfer so it should catch errors.
     
-    AChannel^.ChannelBuffers[buffer_id]^.Length := TUtilities.TestSizeBytes;
+    AChannel^.ChannelBuffers^[buffer_id].Length := TUtilities.TestSizeBytes;
     
     fpIoctl(AChannel^.FileDescriptor, START_XFER, @buffer_id);
     // Handle the case of a specified number of transfers that is less than the number
@@ -51,9 +51,9 @@ begin
   while (TRUE) do
   begin
     fpIoctl(AChannel^.FileDescriptor, FINISH_XFER, @buffer_id);
-    if AChannel^.ChannelBuffers[buffer_id]^.Status <> psNoError then
+    if AChannel^.ChannelBuffers^[buffer_id].Status <> psNoError then
     begin
-      WriteLn(Format('Proxy rx transfer error, # transfers %d, # completed %d, # in progress %d, Status %s', [TUtilities.TransferCount, rx_counter, in_progress_count, ProxyStatusToString(AChannel^.ChannelBuffers[buffer_id]^.Status)]));
+      WriteLn(Format('Proxy rx transfer error, # transfers %d, # completed %d, # in progress %d, Status %s', [TUtilities.TransferCount, rx_counter, in_progress_count, ProxyStatusToString(AChannel^.ChannelBuffers^[buffer_id].Status)]));
 			Exit;
     end;
     
@@ -63,9 +63,9 @@ begin
     begin
       for i := 0 to (1-1) do // test_size / sizeof(unsigned int); i++) this is slow
       begin
-        if AChannel^.ChannelBuffers[buffer_id]^.Buffer[i] <> i + rx_counter then
+        if AChannel^.ChannelBuffers^[buffer_id].Buffer[i] <> i + rx_counter then
         begin
-          WriteLn(Format('buffer not equal, index = %d, data = %d expected data = %d', [i, AChannel^.ChannelBuffers[buffer_id]^.Buffer[i], i + rx_counter]));
+          WriteLn(Format('buffer not equal, index = %d, data = %d expected data = %d', [i, AChannel^.ChannelBuffers^[buffer_id].Buffer[i], i + rx_counter]));
           BREAK;
         end;
       end;

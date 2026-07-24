@@ -46,9 +46,12 @@ type
     Dummy1: Cardinal;
   end;
 
+  PChannelBuffers = ^TChannelBuffers;
+  TChannelBuffers = array[0..(BUFFER_COUNT - 1)] of TChannelBuffer;
+
   PChannel = ^TChannel;
   TChannel = record
-	  ChannelBuffers: array[0..(BUFFER_COUNT - 1)] of PChannelBuffer;
+	  ChannelBuffers: PChannelBuffers;
 	  FileDescriptor: Integer;
 	  ThreadId: Uint64;
   end;

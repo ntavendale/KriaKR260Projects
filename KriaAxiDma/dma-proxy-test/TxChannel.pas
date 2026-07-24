@@ -8,7 +8,7 @@ uses
 
 const 
   TX_CHANNEL_COUNT = 1;  
-  TxChannelNames: array [0..0] of PChar = ('dma_proxy_tx'); //add unique channel names here 
+  TxChannelNames: array [0..0] of String = ('dma_proxy_tx'); //add unique channel names here 
 
 var
   TxChannels: array[0 .. (TX_CHANNEL_COUNT -1)] of TChannel;
@@ -32,11 +32,11 @@ begin
 
   while (buffer_id < TX_BUFFER_COUNT) do
   begin
-    AChannel^.ChannelBuffers[buffer_id]^.Length := TUtilities.TestSizeBytes;
+    AChannel^.ChannelBuffers^[buffer_id].Length := TUtilities.TestSizeBytes;
     if TUtilities.Verify then
     begin
       for i := 0 to (1-1) do// test_size / sizeof(unsigned int); i++)
-        AChannel^.ChannelBuffers[buffer_id]^.Buffer[i] := i + in_progress_count;
+        AChannel^.ChannelBuffers^[buffer_id].Buffer[i] := i + in_progress_count;
     end;
 
     // Start the DMA transfer and this call is non-blocking
@@ -57,8 +57,8 @@ begin
     // Perform the DMA transfer and check the status after it completes
     // as the call blocks til the transfer is done.
     fpIoctl(AChannel^.FileDescriptor, FINISH_XFER, @buffer_id);
-    if (AChannel^.ChannelBuffers[buffer_id]^.Status <> psNoError) then
-      WriteLn(Format('Proxy tx transfer error %s', [ProxyStatusToString(AChannel^.ChannelBuffers[buffer_id]^.Status)]));
+    if (AChannel.ChannelBuffers^[buffer_id].Status <> psNoError) then
+      WriteLn(Format('Proxy tx transfer error %s', [ProxyStatusToString(AChannel^.ChannelBuffers^[buffer_id].Status)]));
     // Keep track of how many transfers are in progress and how many completed
     Dec(in_progress_count);
     Inc(counter);
@@ -90,7 +90,7 @@ begin
     if (TUtilities.Verify) then
     begin
       for i := 0 to (TUtilities.TestSizeBytes div sizeof(Cardinal)) -1 do
-        AChannel^.ChannelBuffers[buffer_id]^.Buffer[i] := i + ((TX_BUFFER_COUNT div BUFFER_INCREMENT) - 1) + counter;
+        AChannel^.ChannelBuffers^[buffer_id].Buffer[i] := i + ((TX_BUFFER_COUNT div BUFFER_INCREMENT) - 1) + counter;
     end;
     
     // Restart the completed channel buffer to start another transfer and keep
