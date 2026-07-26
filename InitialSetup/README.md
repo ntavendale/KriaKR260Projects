@@ -1,5 +1,9 @@
 # Intial Setup Of Kria Kr260 Board
 
+**NOTE:** The minimum firmware version for Ubuntu 24.04 is BootFW-01.02 or later. If you need to update your firmware the details are here: [Kria SOM Boot Firmware Update](https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/3020685316/Kria+SOM+Boot+Firmware+Update#K26-Boot-Firmware-Updates)
+
+If you can't boot Ubuntu 24.04 LTS try the previous version, 22.04 LTS, and upgrade the firmware from that. These instructions should still work with that version.
+
 Things you will need
 
 ![ThingsYouNeed](./ThingsYouNeed.jpg)
@@ -7,7 +11,7 @@ Things you will need
 1. Kria Kr260 Robotics Starter Kit (Comes with power supply)
 1. A Micro SD card, minimum size 32 MB, 64 MB preferred. (I used 128 MB so that works too).
 1. A USB to Micro USB cable.
-1. Some way to plug the Micro SD into you PC ot image it.
+1. Some way to plug the Micro SD into you PC to image it.
 1. One Ethernet cable and a port to plug it into. The board does not have a WiFi interface.
 
 ## Download Image And Write To Card
@@ -38,15 +42,15 @@ Now plug the Kria power supply into to the board to power it on.
 
 On first boot we won't know the IP address of the Ethernet port. However, with the USB to MicroUSB cable plugged in, we can access it using serial communications (UART) over an old fashioned COM port with a baud rate of 115200.
 
-Open the Windows Device Manager and fu=ind the COM ports. In my case there was only one.
+Open the Windows Device Manager and find the COM ports. In my case there was only one.
 
 ![DeviceManager](./DeviceManager.png)
 
-Now you can use your favorite Terminal app to acess it over this port. In my case I used PUTTY.
+Now you can use your favorite Terminal app to access it over this port. I used PUTTY.
 
 ![PuttyConfig](./PuttyConfig.png)
 
-Opening it up you should get a blank terminal. Press the enter key and you will get the login prompt.
+Opening it up you should get a blank terminal. Press the Enter key and you will get the login prompt.
 
 You will initially need to log in with the default credentials
 
@@ -86,3 +90,51 @@ k26-starter-kits    XRT_FLAT        k26-starter-kits  id_ok    XRT_FLAT         
 ```
 
 You can see two apps. The srter kit app for the K-24 and one for the K-26 . Since this is a K-26 board the k26-starter-kits app is in slot 0, meaning it is currently running.
+
+Now we want to check the firmware version:
+
+```
+$ sudo xmutil bootfw_status
+
+Image A: Bootable
+Image B: Bootable
+Requested Boot Image: Image B
+Last Booted Image: Image B
+XilinxSom_QspiImage-k26-v2.1-06140636
+ImageA Revision Info: K26-BootFW-01.02-06140626
+ImageB Revision Info: 1-20251115173103
+```
+
+## Installing Utilities
+
+Right now there are no compilers or make utilities installed so we will need to set those up. The first step in this process is to update the apt database.
+
+```
+$ sudo apt update
+```
+
+Now install gcc
+
+```
+$ sudo apt-get install -y gcc
+```
+
+Next install g++
+
+```
+$ sudo apt-get install -y g++
+```
+
+Then install make
+
+```
+$ sudo apt-get install -y make
+```
+
+And then finally we install a pascal compiler, in our case fpc.
+
+**Note**: Delphi has an ARM compiler for windows and a Linux compiler for x86. It does not yet have a Linux compiler for ARM, so we will have to use free pascal at this time.
+
+```
+$ sudo apt install -y fpc
+```
