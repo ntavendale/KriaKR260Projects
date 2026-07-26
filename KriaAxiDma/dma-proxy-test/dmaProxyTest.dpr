@@ -17,7 +17,7 @@ uses
 
 procedure SigInt(AInput: Integer);
 begin
-	TUtilities.Stop := TRUE;
+  TUtilities.Stop := TRUE;
 end;
 
 procedure ShowUsage;
