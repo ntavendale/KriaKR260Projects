@@ -147,7 +147,7 @@ begin
   end;
 
   start_time := TUtilities.get_posix_clock_time_usec;
-	SetupThreads;
+  SetupThreads;
   
   // Do the minimum to know the transfers are done before getting the time for performance 
   for  i := 0 to (RX_CHANNEL_COUNT-1) do
