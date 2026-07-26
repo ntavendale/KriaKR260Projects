@@ -35,20 +35,18 @@ var
   param: sched_param;
 begin
   newprio := 20;
-
+  
   // Initialize the thread attributes struct
   pthread_attr_init (@tattr_tx);
-
   // The transmit thread should be lower priority than the receive
   // Get the default attributes and scheduling param
-	pthread_attr_getschedparam(@tattr_tx, @param);
+  pthread_attr_getschedparam(@tattr_tx, @param);
   // Set the transmit priority to the lowest
   param.sched_priority := newprio;
-	pthread_attr_setschedparam (@tattr_tx, @param);
+  pthread_attr_setschedparam (@tattr_tx, @param);
 
   for i := 0 to (RX_CHANNEL_COUNT - 1) do
     pthread_create(@RxChannels[i].ThreadId, nil, TStartRoutine(@RxThread), Pointer(@RxChannels[i]));
-
   
   for i := 0 to (TX_CHANNEL_COUNT - 1) do
     pthread_create(@TxChannels[i].ThreadId, @tattr_tx, TStartRoutine(@TxThread), Pointer(@TxChannels[i]));
