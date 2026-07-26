@@ -435,15 +435,18 @@ static int release(struct inode *ino, struct file *file)
  * which buffer to use for the transfer.The BD in this case is only a s/w
  * structure for the proxy driver, not related to the hw BD of the DMA.
  */
+// When you call ioctl form the user space software, this is where you end up
 static long ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
     struct dma_proxy_channel *pChannel = (struct dma_proxy_channel *)file->private_data;
-
+    printk(KERN_INFO "%s Got transfer request. Cmd = %d, arg = %d\n",__func__,cmd,(int *)arg);
     /*
      * Get the bd index from the input argument as all commands require it
      */
-    if(copy_from_user(&pChannel->bdindex, (int *)arg, sizeof(pChannel->bdindex)))
+    if(copy_from_user(&pChannel->bdindex, (int *)arg, sizeof(pChannel->bdindex))) {    
+        printk(KERN_INFO "%s Return EINVAL.\n",__func__); 
         return -EINVAL;
+    }
 
     /*
      * Perform the DMA transfer on the specified channel blocking til it completes

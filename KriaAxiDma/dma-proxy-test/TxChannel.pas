@@ -11,20 +11,20 @@ const
   TxChannelNames: array [0..(TX_CHANNEL_COUNT -1)] of String = ('dma_proxy_tx'); //add unique channel names here 
 
 var
-  TxChannels: array[0 .. (TX_CHANNEL_COUNT -1)] of TChannel;
+  TxChannels: array[0 .. (TX_CHANNEL_COUNT -1)] of TTxChannel;
 
 // The following function is the transmit thread to allow the transmit and the receive channels to be
 // operating simultaneously. Some of the ioctl calls are blocking so that multiple threads are required.
-function TxThread(AChannel: PChannel): Pointer;
+function TxThread(AChannel: PTxChannel): Pointer;
 
 implementation
 
-function TxThread(AChannel: PChannel): Pointer;
+function TxThread(AChannel: PTxChannel): Pointer;
 var
-  i, counter, buffer_id, in_progress_count: Integer;
+  i, counter, buffer_id, in_progress_count, sent_value, ioctl_result: Integer;
   stop_in_progress: Boolean;
 begin
-  
+  WriteLn('Starting Tx thread');
   counter := 0;
   in_progress_count := 0;
   buffer_id := 0;
@@ -36,11 +36,18 @@ begin
     if TUtilities.Verify then
     begin
       for i := 0 to (1-1) do// test_size / sizeof(unsigned int); i++)
-        AChannel^.ChannelBuffers^[buffer_id].Buffer[i] := i + in_progress_count;
+      begin
+        sent_value := i + in_progress_count;
+        AChannel^.ChannelBuffers^[buffer_id].Buffer[i] := sent_value;
+        WriteLn(Format('Sent value: %d', [sent_value]));
+      end;
     end;
-
+    
+    WriteLn('Start Tx Transfer');
     // Start the DMA transfer and this call is non-blocking
-    fpIoctl(AChannel^.FileDescriptor, START_XFER, @buffer_id);
+    ioctl_result := fpIoctl(AChannel^.FileDescriptor, START_XFER, @buffer_id);
+    if 0 <> ioctl_result then
+      WriteLn(Format('fpIoctl returned: %d', [ioctl_result]));
 
     // Keep track of the number of transfers that are in progress and if the number is less
     // than the number of channel buffers then stop before all channel buffers are used
@@ -56,6 +63,7 @@ begin
   begin
     // Perform the DMA transfer and check the status after it completes
     // as the call blocks til the transfer is done.
+    WriteLn('Finish Tx Transfer');
     fpIoctl(AChannel^.FileDescriptor, FINISH_XFER, @buffer_id);
     if (AChannel.ChannelBuffers^[buffer_id].Status <> psNoError) then
       WriteLn(Format('Proxy tx transfer error %s', [ProxyStatusToString(AChannel^.ChannelBuffers^[buffer_id].Status)]));

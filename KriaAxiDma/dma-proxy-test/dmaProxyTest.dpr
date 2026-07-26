@@ -64,21 +64,22 @@ begin
   try
     TUtilities.TransferCount := StrToInt(ParamStr(1));
     TUtilities.TestSizeKb := StrToInt(ParamStr(2));
-    if (ParamCount >= 4) then
+    if (ParamCount >= 3) then
       TUtilities.Verify := 0 <> StrToInt(ParamStr(3));
   except
     ShowUsage;
     Exit;
   end;
-  WriteLn('DMA Proxy Test');
+  WriteLn('DMA Proxy Test (', ParamCount, ')');
   WriteLn(Format('  Transfer Count     : %d', [TUtilities.TransferCount]));
   WriteLn(Format('  Transfer Data Size : %d Kb', [TUtilities.TestSizeKb]));
   if TUtilities.Verify then
     WriteLn('  Verify             : True')
   else  
     WriteLn('  Verify             : False');
-  WriteLn(Format('  TChannelBuffer Size Size : %d Bytes', [SizeOf(TChannelBuffer)]));
-  WriteLn(Format('  TChannel Size Size       : %d Bytes', [SizeOf(TChannel)]));
+  WriteLn(Format('  TxChannelBuffer Size Size : %d Bytes', [SizeOf(TChannelBuffer)]));
+  WriteLn(Format('  TxChannel Size Size       : %d Bytes', [SizeOf(TTxChannel)]));
+  WriteLn(Format('  RxChannel Size Size       : %d Bytes', [SizeOf(TRxChannel)]));
 
   max_channel_count := Max(TX_CHANNEL_COUNT, RX_CHANNEL_COUNT);
 
@@ -100,7 +101,7 @@ begin
     // and use that address as our buffer pointer.
     // Because we defined a TChannelBuffers type TxChannels[i].ChannelBuffers won't be an opaque pointer.
     // We just allocate the size of that. We don't need to do calculate it's size
-    TxChannels[i].ChannelBuffers := PChannelBuffers(fpMmap(nil, SizeOf(TChannelBuffers), PROT_READ or PROT_WRITE, MAP_SHARED, TxChannels[i].FileDescriptor, 0));
+    TxChannels[i].ChannelBuffers := PTxChannelBuffers(fpMmap(nil, SizeOf(TTxChannelBuffers), PROT_READ or PROT_WRITE, MAP_SHARED, TxChannels[i].FileDescriptor, 0));
     
     if (TxChannels[i].ChannelBuffers = MAP_FAILED) then 
     begin
@@ -111,7 +112,7 @@ begin
     WriteLn(Format('TX#%d: 0x%p', [i, TxChannels[i].ChannelBuffers]));
   end;
 
-  WriteLn('Set up TxWRead channels');
+  WriteLn('Set up TxRead channels');
   // Open the file descriptors for each rx channel and map the kernel driver memory into user space 
   // DMA cannot use virtual addresses. It needs a PHYSICAL memory address. So instead of allocating
   // memory using getmem, allocmem or whatever we will use fpMMap to map physical to the character device 
@@ -135,7 +136,7 @@ begin
     // and use that address as our buffer pointer.
     // Because we defined a TChannelBuffers type TxChannels[i].ChannelBuffers won't be an opaque pointer.
     // We just allocate the size of that. We don't need to do calculate it's size
-    RxChannels[i].ChannelBuffers := PChannelBuffers(fpMmap(nil, sizeof(TChannelBuffers), PROT_READ or PROT_WRITE, MAP_SHARED, RxChannels[i].FileDescriptor, 0));
+    RxChannels[i].ChannelBuffers := PRxChannelBuffers(fpMmap(nil, sizeof(TRxChannelBuffers), PROT_READ or PROT_WRITE, MAP_SHARED, RxChannels[i].FileDescriptor, 0));
     if RxChannels[i].ChannelBuffers = MAP_FAILED then
     begin
       WriteLn('Failed to mmap rx channel');
@@ -166,13 +167,13 @@ begin
   for i := 0 to (TX_CHANNEL_COUNT - 1) do
   begin
     pthread_join(TxChannels[i].ThreadId, nil);
-    fpMunmap(TxChannels[i].ChannelBuffers, SizeOf(TChannelBuffers));
+    fpMunmap(TxChannels[i].ChannelBuffers, SizeOf(TTxChannelBuffers));
     fpClose(TxChannels[i].FileDescriptor);
   end;
   
 	for i := 0 to (RX_CHANNEL_COUNT - 1) do
   begin
-		fpMunmap(RxChannels[i].ChannelBuffers, SizeOf(TChannelBuffers));
+		fpMunmap(RxChannels[i].ChannelBuffers, SizeOf(TRxChannelBuffers));
     fpClose(RxChannels[i].FileDescriptor);
   end;
   WriteLn('');

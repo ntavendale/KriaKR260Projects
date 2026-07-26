@@ -11,18 +11,19 @@ const
   RxChannelNames: array [0..0] of PChar = ('dma_proxy_rx'); //add unique channel names here 
 
 var
-  RxChannels: array[0 .. (RX_CHANNEL_COUNT -1)] of TChannel;
+  RxChannels: array[0 .. (RX_CHANNEL_COUNT -1)] of TRxChannel;
 
 // The following function is the transmit thread to allow the transmit and the receive channels to be
 // operating simultaneously. Some of the ioctl calls are blocking so that multiple threads are required.
-function RxThread(AChannel: PChannel): Pointer;  
+function RxThread(AChannel: PRxChannel): Pointer;  
 
 implementation
 
-function RxThread(AChannel: PChannel): Pointer;
+function RxThread(AChannel: PRxChannel): Pointer;
 var
   i, in_progress_count, buffer_id,rx_counter: Integer;
 begin
+  WriteLn('Starting Rx thread');
   in_progress_count := 0;
   buffer_id := 0;
   rx_counter := 0;
@@ -65,7 +66,7 @@ begin
       begin
         if AChannel^.ChannelBuffers^[buffer_id].Buffer[i] <> i + rx_counter then
         begin
-          WriteLn(Format('buffer not equal, index = %d, data = %d expected data = %d', [i, AChannel^.ChannelBuffers^[buffer_id].Buffer[i], i + rx_counter]));
+          WriteLn(Format('Buffer contents not equal, index = %d, data = %d expected data = %d', [i, AChannel^.ChannelBuffers^[buffer_id].Buffer[i], i + rx_counter]));
           BREAK;
         end;
       end;

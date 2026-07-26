@@ -1,4 +1,4 @@
-INC = /home/ubuntu/development/KriaKR260Projects/KriaAxiDma/xilinx/Software/Common/
+INC = /home/ubuntu/development/KriaKR260Projects/KriaAxiDma/xilinx/Common/
 EXTRA_CFLAGS += -I$(INC)
 
 obj-m += dma-proxy.o

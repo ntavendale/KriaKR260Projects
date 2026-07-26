@@ -46,13 +46,21 @@ type
     Dummy1: Cardinal;
   end;
 
-  PChannelBuffers = ^TChannelBuffers;
-  TChannelBuffers = array[0..(BUFFER_COUNT - 1)] of TChannelBuffer;
+  PTxChannelBuffers = ^TTxChannelBuffers;
+  TTxChannelBuffers = array[0..(TX_BUFFER_COUNT - 1)] of TChannelBuffer;
+  PRxChannelBuffers = ^TRxChannelBuffers;
+  TRxChannelBuffers = array[0..(RX_BUFFER_COUNT - 1)] of TChannelBuffer;
 
-  PChannel = ^TChannel;
-  TChannel = record
-	  ChannelBuffers: PChannelBuffers;
-	  FileDescriptor: Integer;
+  PTxChannel = ^TTxChannel;
+  TTxChannel = record
+    ChannelBuffers: PTxChannelBuffers;
+    FileDescriptor: Integer;
+	  ThreadId: Uint64;
+  end;
+  PRxChannel = ^TRxChannel;
+  TRxChannel = record
+    ChannelBuffers: PRxChannelBuffers;
+    FileDescriptor: Integer;
 	  ThreadId: Uint64;
   end;
 
@@ -97,22 +105,22 @@ end;
 
 function FINISH_XFER: Cardinal;
 begin
-  Result := IOW('a','a', SizeOf(Integer));
+  Result := IOW('a','a', SizeOf(Pointer));
 end;
 
 function START_XFER: Cardinal;
 begin
-  Result := IOW('a', 'b', SizeOf(Integer));
+  Result := IOW('a', 'b', SizeOf(Pointer));
 end;
 
 function XFER: Cardinal;
 begin
-  Result := IOR('a', 'c', SizeOf(Integer));
+  Result := IOR('a', 'c', SizeOf(Pointer));
 end;
 
 function SHOW_BUFLEN: Cardinal;
 begin
-  Result := IOR('a', 'd', SizeOf(Integer));
+  Result := IOR('a', 'd', SizeOf(Pointer));
 end;
 
 begin
