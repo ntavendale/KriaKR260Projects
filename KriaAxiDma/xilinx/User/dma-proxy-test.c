@@ -128,9 +128,13 @@ void* tx_thread(void* px)
 		 */
 		channel_ptr->buf_ptr[buffer_id].length = test_size;
 
-		if (verify)
-			for (i = 0; i < 1; i++) // test_size / sizeof(unsigned int); i++)
-				channel_ptr->buf_ptr[buffer_id].buffer[i] = i + in_progress_count;
+		if (verify) {
+			for (i = 0; i < 1; i++) { 
+				int val = i + in_progress_count;
+				printf("val = %d\n", val);
+				channel_ptr->buf_ptr[buffer_id].buffer[i] =  i + val;
+			}
+		}
 
 		/* Start the DMA transfer and this call is non-blocking
 		 *
@@ -163,7 +167,7 @@ void* tx_thread(void* px)
 		counter++;
 
 		/* If all the transfers are done then exit */
-
+		printf("counter = %d, num_transfers = %d\n", counter,  num_transfers);
 		if (counter >= num_transfers)
 			break;
 
@@ -179,17 +183,21 @@ void* tx_thread(void* px)
 		}
 
 		/* If the ones in progress will complete the count then don't start more */
-
+		printf("counter = %d, in_progress_count = %d, num_transfers = %d\n", counter, in_progress_count, num_transfers);
 		if ((counter + in_progress_count) >= num_transfers)
 			goto end_tx_loop0;
 
 		/* Initialize the buffer and perform the DMA transfer, check the status after it completes
 		 * as the call blocks til the transfer is done.
 		 */
+		printf("Update Buffs");
 		if (verify) {
 			unsigned int *buffer = (unsigned int *)&channel_ptr->buf_ptr[buffer_id].buffer;
-			for (i = 0; i < test_size / sizeof(unsigned int); i++)
+			for (i = 0; i < test_size / sizeof(unsigned int); i++) {
 				buffer[i] = i + ((TX_BUFFER_COUNT / BUFFER_INCREMENT) - 1) + counter;
+			}
+			int last = buffer[test_size / sizeof(unsigned int) - 1] ;
+			printf("Last = %d\n", last);
 		}
 
 		/* Restart the completed channel buffer to start another transfer and keep
@@ -382,7 +390,7 @@ int main(int argc, char *argv[])
 			printf("Failed to mmap tx channel\n");
 			exit(EXIT_FAILURE);
 		}
-        printf("TX#%d: %lx\n",i,tx_channels[i].buf_ptr);
+        printf("TX#%d: %p\n", i, tx_channels[i].buf_ptr);
 	}
 
 	/* Open the file descriptors for each rx channel and map the kernel driver memory into user space */
@@ -401,7 +409,7 @@ int main(int argc, char *argv[])
 			printf("Failed to mmap rx channel\n");
 			exit(EXIT_FAILURE);
 		}
-        printf("RX#%d: %lx\n",i,rx_channels[i].buf_ptr);
+        printf("RX#%d: %p\n", i, rx_channels[i].buf_ptr);
 	}
 
 	/* Grab the start time to calculate performance then start the threads & transfers on all channels */
@@ -420,8 +428,8 @@ int main(int argc, char *argv[])
 	time_diff = end_time - start_time;
 	mb_sec = ((1000000 / (double)time_diff) * (num_transfers * max_channel_count * (double)test_size)) / 1000000;
 
-	printf("Time: %d microseconds\n", time_diff);
-	printf("Transfer size: %d KB\n", (long long)(num_transfers) * (test_size / 1024) * max_channel_count);
+	printf("Time: %ld microseconds\n", time_diff);
+	printf("Transfer size: %lld KB\n", (long long)(num_transfers) * (test_size / 1024) * max_channel_count);
 	printf("Throughput: %d MB / sec \n", mb_sec);
 
 	/* Clean up all the channels before leaving */

@@ -8,7 +8,7 @@ uses
 
 const 
   TX_CHANNEL_COUNT = 1;  
-  TxChannelNames: array [0..0] of String = ('dma_proxy_tx'); //add unique channel names here 
+  TxChannelNames: array [0..(TX_CHANNEL_COUNT -1)] of String = ('dma_proxy_tx'); //add unique channel names here 
 
 var
   TxChannels: array[0 .. (TX_CHANNEL_COUNT -1)] of TChannel;
