@@ -106,9 +106,9 @@ begin
     if (TxChannels[i].ChannelBuffers = MAP_FAILED) then 
     begin
       WriteLn('Failed to mmap tx channel');
-			ExitCode := 1;
+      ExitCode := 1;
       Exit;
-		end;
+    end;
     WriteLn(Format('TX#%d: 0x%p', [i, TxChannels[i].ChannelBuffers]));
   end;
 
@@ -119,9 +119,9 @@ begin
   // and use that address as our buffer pointer.
   // Because we defined a TChannelBuffers type TxChannels[i].ChannelBuffers won't be an opaque pointer.
   // We just allocate the size of that. We don't need to do calculate it's size
-	for i := 0 to (RX_CHANNEL_COUNT-1) do
+  for i := 0 to (RX_CHANNEL_COUNT-1) do
   begin
-		channel_name := '/dev/' + RxChannelNames[i];
+    channel_name := '/dev/' + RxChannelNames[i];
     RxChannels[i].FileDescriptor := fpOpen(channel_name, O_RDWR);
     if RxChannels[i].FileDescriptor < 1 then
     begin
@@ -140,29 +140,27 @@ begin
     if RxChannels[i].ChannelBuffers = MAP_FAILED then
     begin
       WriteLn('Failed to mmap rx channel');
-			ExitCode := 1;
+      ExitCode := 1;
       Exit;
-		end;
+    end;
     WriteLn(Format('RX#%d: 0x%p', [i, RxChannels[i].ChannelBuffers]));
-	end;
+  end;
 
   start_time := TUtilities.get_posix_clock_time_usec;
 	SetupThreads;
   
   // Do the minimum to know the transfers are done before getting the time for performance 
   for  i := 0 to (RX_CHANNEL_COUNT-1) do
-		pthread_join(RxChannels[i].ThreadId, nil);
-    
-  // Grab the end time and calculate the performance
+    pthread_join(RxChannels[i].ThreadId, nil);
 
-	end_time := TUtilities.get_posix_clock_time_usec;
-	time_diff := end_time - start_time;
-	mb_sec := (1000000 / time_diff) * (TUtilities.TransferCount * max_channel_count * TUtilities.TestSizeBytes) / 1000000;
+  // Grab the end time and calculate the performance
+  end_time := TUtilities.get_posix_clock_time_usec;
+  time_diff := end_time - start_time;
+  mb_sec := (1000000 / time_diff) * (TUtilities.TransferCount * max_channel_count * TUtilities.TestSizeBytes) / 1000000;
   
   WriteLn(Format('Time: %d microseconds', [time_diff]));
   WriteLn(Format('Transfer size: % KB', [TUtilities.TransferCount * (TUtilities.TestSizeKb) * max_channel_count]));
   WriteLn(Format('Throughput %f.3 MB / sec', [mb_sec]));
-  
   //Clean up all the channels before leaving 
   for i := 0 to (TX_CHANNEL_COUNT - 1) do
   begin
@@ -171,14 +169,13 @@ begin
     fpClose(TxChannels[i].FileDescriptor);
   end;
   
-	for i := 0 to (RX_CHANNEL_COUNT - 1) do
+  for i := 0 to (RX_CHANNEL_COUNT - 1) do
   begin
-		fpMunmap(RxChannels[i].ChannelBuffers, SizeOf(TRxChannelBuffers));
+    fpMunmap(RxChannels[i].ChannelBuffers, SizeOf(TRxChannelBuffers));
     fpClose(RxChannels[i].FileDescriptor);
   end;
   WriteLn('');
   WriteLn('So long and thanks for all the fish!');
   WriteLn('DMA proxy test complete');
-
 end.
 
