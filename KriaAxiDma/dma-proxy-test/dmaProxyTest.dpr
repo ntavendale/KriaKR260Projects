@@ -162,8 +162,8 @@ begin
   mb_sec := (1000000 / time_diff) * (TUtilities.TransferCount * max_channel_count * TUtilities.TestSizeBytes) / 1000000;
   
   WriteLn(Format('Time: %d microseconds', [time_diff]));
-  WriteLn(Format('Transfer size: % KB', [TUtilities.TransferCount * (TUtilities.TestSizeKb) * max_channel_count]));
-  WriteLn(Format('Throughput %f.3 MB / sec', [mb_sec]));
+  WriteLn(Format('Transfer size: %d KB', [TUtilities.TransferCount * (TUtilities.TestSizeKb) * max_channel_count]));
+  WriteLn(Format('Throughput %.3f MB / sec', [mb_sec]));
   //Clean up all the channels before leaving 
   for i := 0 to (TX_CHANNEL_COUNT - 1) do
   begin

@@ -38,7 +38,7 @@ var
   ts: timespec;
 begin
   if (clock_gettime (CLOCK_MONOTONIC, @ts) = 0) then
-    Result:= UInt64((ts.tv_sec * 1000000) + (ts.tv_nsec / 1000))
+    Result:= (ts.tv_sec * 1000000) + (ts.tv_nsec div 1000)
   else
     Result := 0;
 end;
