@@ -46,9 +46,9 @@ begin
     Inc(buffer_id, BUFFER_INCREMENT);
   end;
   
-  buffer_id := 0;
   // Finish each queued up receive buffer and keep starting the buffer over again
   // until all the transfers are done
+  buffer_id := 0; // Reset buffer_id to access channels from beginning of array again.
   while (TRUE) do
   begin
     fpIoctl(AChannel^.FileDescriptor, FINISH_XFER, @buffer_id);

@@ -59,6 +59,7 @@ begin
   end;
 
   // Start finishing up the DMA transfers that were started beginning with the 1st channel buffer.
+  buffer_id := 0; // Reset buffer_id to access channels from beginning of array again.
   while (TRUE) do
   begin
     // Perform the DMA transfer and check the status after it completes

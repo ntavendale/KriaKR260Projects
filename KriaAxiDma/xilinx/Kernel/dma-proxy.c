@@ -1,4 +1,4 @@
-/**
+ /**
  * Copyright (C) 2021 Xilinx, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License"). You may
@@ -438,14 +438,33 @@ static int release(struct inode *ino, struct file *file)
 // When you call ioctl form the user space software, this is where you end up
 static long ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
+    int left_over = 0;
     struct dma_proxy_channel *pChannel = (struct dma_proxy_channel *)file->private_data;
-    printk(KERN_INFO "%s Got transfer request. Cmd = %d, arg = %d\n",__func__,cmd,(int *)arg);
-    /*
-     * Get the bd index from the input argument as all commands require it
-     */
-    if(copy_from_user(&pChannel->bdindex, (int *)arg, sizeof(pChannel->bdindex))) {    
-        printk(KERN_INFO "%s Return EINVAL.\n",__func__); 
+    if (trace) {
+        if (DMA_DEV_TO_MEM == pChannel->direction) {
+            printk(KERN_INFO "%s Got RX transfer request. Cmd = %d, arg = %ul\n",__func__, cmd, arg);
+        } else if (DMA_MEM_TO_DEV == pChannel->direction) {
+            printk(KERN_INFO "%s Got TX transfer request. Cmd = %d, arg = %ul\n",__func__, cmd, arg);
+        } else {
+            printk(KERN_INFO "%s Got Unknown transfer request. Cmd = %d, arg = %ul\n",__func__, cmd, arg);
+        }
+    }
+
+    // Get the bd index from the input argument as all commands require it
+    // Cannot just dereference pointer. Pointer is an address in virtual 
+    // memory created for app in user space.
+    // We are in the kernel so we need to copy the data into a buffer using copy_from_user
+    // routine.
+    left_over = copy_from_user(&pChannel->bdindex, (int *)arg, sizeof(pChannel->bdindex));
+    if (0 != left_over) {    
+        if(trace) {
+            printk(KERN_INFO "%s Return EINVAL. %d of %ul left_over not read\n",__func__, left_over, sizeof(pChannel->bdindex)); 
+        }
         return -EINVAL;
+    } else {
+        if(trace) {
+            printk(KERN_INFO "%s got bdindex %d.\n",__func__, pChannel->bdindex); 
+        }
     }
 
     /*
@@ -453,16 +472,28 @@ static long ioctl(struct file *file, unsigned int cmd, unsigned long arg)
      */
     switch(cmd) {
     case START_XFER:
+        if(trace) {
+            printk(KERN_INFO "%s start_transfer START_XFER.\n",__func__); 
+        }
         start_transfer(pChannel);
         break;
     case FINISH_XFER:
+        if(trace) {
+            printk(KERN_INFO "%s wait_for_transfer FINISH_XFER.\n",__func__); 
+        }
         wait_for_transfer(pChannel);
         break;
     case XFER:
+        if(trace) {
+            printk(KERN_INFO "%s start_transfer, wait_for_transfer XFER.\n",__func__); 
+        }
         start_transfer(pChannel);
         wait_for_transfer(pChannel);
         break;
     case SHOW_BUFLEN:
+        if(trace) {
+            printk(KERN_INFO "%s show_buflen SHOW_BUFLEN.\n",__func__); 
+        }
         show_buflen(pChannel);
         break;
     }

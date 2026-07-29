@@ -10,6 +10,8 @@ All of the development was done on Windows except where anything had to be compi
 
 For the Kria I used the Ubuntu 22.4 LTS image available here: [Install Ubuntu On AMD](https://ubuntu.com/download/amd). If it doesn't come with them installed already, use apt to instal gcc, g++, and make along with freepascal.
 
+I also tried it with Ubuntu Server 24.04 LTS and it works as long as the firmware is up to date - BootFW-01.02 or later.
+
 ## Recreate Vivado Project And Block Diagram
 
 The fpga project was created in Vivado 2024.2 and the .tcl script to reproduce it was also made wit this version. To recreate to you will need to use Vivado's Tcl console.
@@ -27,7 +29,7 @@ The fpga project was created in Vivado 2024.2 and the .tcl script to reproduce i
 
 This will recreate the project, and the hdl wrapper, but you will still need to generate the output products for the block diagram.
 
-Open the block design, axi_dma_bd, and find it in the Design Sources. It should be under the hdl warapper. Right click and select Generate Output Products. For Synthesis Options choose global and click generate.
+Open the block design, axi_dma_bd, and find it in the Design Sources. It should be under the hdl wrapper. Right click and select Generate Output Products. For Synthesis Options choose global and click generate.
 
 After that you should be able to create the bit stream and export the hardware to a .xsa file (File -> Export -> Export Hardware...). Remember to include the bit stream.
 
@@ -55,7 +57,7 @@ This should give you a c:\Development\device-tree-xlnx directory on your PC with
 
 ### Use xsct To Create The initial pl.dtsi File.
 
-Next you need to open the Vitas xsct console. By default Vitis is installed in C:\\Xilinx\\Vitis\[version\]
+Next you need to open the Vitis xsct console. By default Vitis is installed in C:\\Xilinx\\Vitis\[version\]
 
 Open a command prompt (cmd.exe, not PowerShell). Before using the xsct you are going to have to set up a Vitis environment.
 
@@ -86,7 +88,7 @@ Generate outputs using XSCT console.
 ```
 xsct% hsi open_hw_design C:/Development/KriaKR260Projects/KriaAxiDma/axi_dma_demo/outputs/axi_dma_demo.xsa
 
-xsct% hsi set_repo_path c:/Development/device-tree-xlnx directory
+xsct% hsi set_repo_path c:/Development/device-tree-xlnx
 
 xsct% hsi create_sw_design device-tree -os device_tree -proc psu_cortexa53_0
 

@@ -2,6 +2,11 @@
 program dmaProxyTest;
 
 uses
+  // By default, Free Pascal compiles programs as single-threaded applications.
+  // To resolve this issue, you must include the cThreads unit as the VERY FIRST
+  // unit in the uses clause of your main program file when working on Posix systems.
+  // We won't bother with an ifdef since this is a linux only project.
+  cThreads, 
   SysUtils,
   Unix, 
   BaseUnix,
