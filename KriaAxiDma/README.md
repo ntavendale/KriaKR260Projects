@@ -8,7 +8,7 @@ I use a C:\Development folder to keep all my projects in so I will write these i
 
 All of the development was done on Windows except where anything had to be compiled on the Kria board itself (since it is an Arm system). It is possible to set up a cross compile project on WSL to build everything, but that is beyond the scope of this demo.
 
-For the Kria I used the Ubuntu 22.4 LTS image available here: [Install Ubuntu On AMD](https://ubuntu.com/download/amd). If it doesn't come with them installed already, use apt to instal gcc, g++, and make along with freepascal.
+For the Kria I used the Ubuntu 22.04 LTS image available here: [Install Ubuntu On AMD](https://ubuntu.com/download/amd). If it doesn't come with them installed already, use apt to instal gcc, g++, and make along with freepascal.
 
 I also tried it with Ubuntu Server 24.04 LTS and it works as long as the firmware is up to date - BootFW-01.02 or later.
 
