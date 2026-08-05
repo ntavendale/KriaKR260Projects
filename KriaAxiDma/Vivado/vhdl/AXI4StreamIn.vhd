@@ -16,18 +16,18 @@ entity AXI4StreamIn is
     
     -- Control signals  
     s_axis_aclk          : in  std_logic;
-    s_axis_aresetn       : in  std_logic;
+    s_axis_aresetn       : in  std_logic; -- active low reset
     
     -- AXI4-Stream Slave Interface (data in)
     s_axis_tdata  : in std_logic_vector(FIFO_WIDTH - 1 downto 0);
-    s_axis_tkeep  : in std_logic_vector((FIFO_WIDTH / 4) - 1 downto 0);
+    s_axis_tkeep  : in std_logic_vector((FIFO_WIDTH / 8) - 1 downto 0);
     s_axis_tvalid : in std_logic;
     s_axis_tlast  : in std_logic;
     s_axis_tready : out std_logic;
     
     -- AXI4-Stream Master Interface (data out)
     m_axis_tdata  : out std_logic_vector(FIFO_WIDTH - 1 downto 0);
-    m_axis_tkeep  : out std_logic_vector((FIFO_WIDTH / 4) - 1 downto 0);
+    m_axis_tkeep  : out std_logic_vector((FIFO_WIDTH / 8) - 1 downto 0);
     m_axis_tvalid : out std_logic;
     m_axis_tlast  : out std_logic;
     m_axis_tready : in std_logic
@@ -50,7 +50,7 @@ begin
   p_fifo_process: process(s_axis_aclk)
   begin
     if rising_edge(s_axis_aclk) then
-       if s_axis_aresetn = '1' then
+       if s_axis_aresetn = '0' then
          wr_index <= 0;
          rd_index <= 0;
          r_count <= 0;
