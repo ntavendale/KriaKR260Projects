@@ -10,6 +10,17 @@ const
   TX_CHANNEL_COUNT = 1;  
   TxChannelNames: array [0..(TX_CHANNEL_COUNT -1)] of String = ('dma_proxy_tx'); //add unique channel names here 
 
+type 
+  PTxChannelBuffers = ^TTxChannelBuffers;
+  TTxChannelBuffers = array[0..(TX_BUFFER_COUNT - 1)] of TChannelBuffer;
+
+  PTxChannel = ^TTxChannel;
+  TTxChannel = record
+    ChannelBuffers: PTxChannelBuffers;
+    FileDescriptor: Integer;
+	  ThreadId: Uint64;
+  end;
+
 var
   TxChannels: array[0 .. (TX_CHANNEL_COUNT -1)] of TTxChannel;
 
@@ -35,12 +46,13 @@ begin
     AChannel^.ChannelBuffers^[buffer_id].Length := TUtilities.TestSizeBytes;
     if TUtilities.Verify then
     begin
-      for i := 0 to (1-1) do// test_size / sizeof(unsigned int); i++)
+      sent_value := 0;
+      for i := 0 to (BUFFER_ARRAY_LENGTH - 1) do
       begin
-        sent_value := i + in_progress_count;
-        AChannel^.ChannelBuffers^[buffer_id].Buffer[i] := sent_value;
-        WriteLn(Format('Sent value: %d', [sent_value]));
-      end;
+        AChannel^.ChannelBuffers^[buffer_id].Buffer[i] := sent_value + i;
+      end;  
+      WriteLn(Format('Tx[%d].Buffer[0]: %d', [buffer_id, AChannel^.ChannelBuffers^[buffer_id].Buffer[0]]));
+      WriteLn(Format('Tx[%d].Buffer[%d]: %d', [buffer_id, BUFFER_ARRAY_LENGTH - 1, AChannel^.ChannelBuffers^[buffer_id].Buffer[BUFFER_ARRAY_LENGTH - 1]]));
     end;
     
     WriteLn('Start Tx Transfer');

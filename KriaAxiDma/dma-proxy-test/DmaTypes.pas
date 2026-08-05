@@ -8,10 +8,10 @@ uses
   SysUtils, Classes, Unix, BaseUnix;
 
 const
-  BUFFER_SIZE             = (128 * 1024); // must match driver exactly 
+  BUFFER_SIZE_BYTES       = (128 * 1024); // must match driver exactly 
   BUFFER_COUNT            = 32;           // driver only 
   SIZE_OF_CARDINAL        = 4;
-  BUFFER_ARRAY_SIZE_BYTES = (BUFFER_SIZE div SIZE_OF_CARDINAL);
+  BUFFER_ARRAY_LENGTH     = (BUFFER_SIZE_BYTES div SIZE_OF_CARDINAL);
 
   TX_BUFFER_COUNT =	1;            // app only, must be <= to the number in the driver 
   RX_BUFFER_COUNT = 32;           // app only, must be <= to the number in the driver 
@@ -39,31 +39,14 @@ type
   TProxyStatus = (psNoError = 0, psBusy = 1, psTimeout = 2, psError = 3);
   PChannelBuffer = ^TChannelBuffer;
   TChannelBuffer = record
-  	Buffer: array [0..(BUFFER_ARRAY_SIZE_BYTES - 1)] of Cardinal;
+  	Buffer: array [0..(BUFFER_ARRAY_LENGTH - 1)] of Cardinal;
 	  Status: TProxyStatus;
 	  Length: Cardinal;
     Dummy0: Cardinal;
     Dummy1: Cardinal;
   end;
 
-  PTxChannelBuffers = ^TTxChannelBuffers;
-  TTxChannelBuffers = array[0..(TX_BUFFER_COUNT - 1)] of TChannelBuffer;
-  PRxChannelBuffers = ^TRxChannelBuffers;
-  TRxChannelBuffers = array[0..(RX_BUFFER_COUNT - 1)] of TChannelBuffer;
-
-  PTxChannel = ^TTxChannel;
-  TTxChannel = record
-    ChannelBuffers: PTxChannelBuffers;
-    FileDescriptor: Integer;
-	  ThreadId: Uint64;
-  end;
-  PRxChannel = ^TRxChannel;
-  TRxChannel = record
-    ChannelBuffers: PRxChannelBuffers;
-    FileDescriptor: Integer;
-	  ThreadId: Uint64;
-  end;
-
+  
 function ProxyStatusToString(AProxyStatus: TProxyStatus): String;
 function IOW(AType, ANumber: Char; ADataSize: Cardinal): Cardinal;
 function IOR(AType, ANumber: Char; ADataSize: Cardinal): Cardinal;

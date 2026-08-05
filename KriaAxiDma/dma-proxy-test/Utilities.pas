@@ -29,8 +29,8 @@ implementation
 class function TUtilities.GetTestSizeBytes: Cardinal;
 begin
   Result := FDataCountKilobytes * 1024;
-  if (Result > BUFFER_SIZE) then
-    Result := BUFFER_SIZE;
+  if (Result > BUFFER_SIZE_BYTES) then
+    Result := BUFFER_SIZE_BYTES;
 end;
 
 class function TUtilities.get_posix_clock_time_usec: UInt64;
