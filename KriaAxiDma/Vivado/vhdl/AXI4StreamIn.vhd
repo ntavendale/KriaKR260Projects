@@ -43,7 +43,7 @@ architecture rtl of AXI4StreamIn is
   signal r_fifo_empty : std_logic := '1';
   -- FIFO array types and signals
   type t_fifo_array is array (0 to FIFO_DEPTH - 1) of std_logic_vector(FIFO_WIDTH - 1 downto 0);
-  signal r_fifo_data : t_fifo_array; -- the actual data array
+  signal r_fifo_data : t_fifo_array  := (others => (others => '0')); -- the actual data array
   
 begin
   -- Synchronous Process for Handshaking
@@ -68,7 +68,7 @@ begin
          -- This new wr_index value will be applied at the end 
          -- of this process block to be used the NEXT time the process
          -- block runs (the next rising edge)
-        if (s_axis_tvalid = '1' and r_fifo_full = '0') then
+        if (s_axis_tvalid = '1' and r_fifo_full = '0') and (r_count < FIFO_DEPTH -1) then
           if wr_index = FIFO_DEPTH-1 then
             wr_index <= 0;
           else
@@ -81,7 +81,7 @@ begin
         -- This new rd_index value will be applied at the end 
         -- of this process block to be used the NEXT time the process
         -- block runs (the next rising edge) 
-        if (m_axis_tready = '1' and r_fifo_empty = '0') then
+        if (m_axis_tready = '1' and r_fifo_empty = '0') and (r_count > 1) then
           if rd_index = FIFO_DEPTH-1 then
             rd_index <= 0;
           else
@@ -108,6 +108,6 @@ begin
   s_axis_tready <= '0' when r_count = FIFO_DEPTH  else '1'; 
   m_axis_tvalid <= '0' when r_count = 0 else '1';
   
-  m_axis_tlast <= r_fifo_empty;
+  m_axis_tlast <= '0'; -- we are not framiog
   
 end rtl;
