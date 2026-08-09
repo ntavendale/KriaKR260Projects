@@ -169,7 +169,7 @@ If successful you can remove the .dtdi file and create the shell.json
 
 ```
 rm pl.dtsi
-echo '{ "shell_type" : "XRT_FLAT", "num_slots": "1" }' > app_name/shell.json
+echo '{ "shell_type" : "XRT_FLAT", "num_slots": "1" }' > shell.json
 ```
 
 Now copy the folder containing the .bin, .dtbo, and .json files to /lib/firmware/xilinx/
