@@ -154,7 +154,7 @@ Now on your PC you will need to copy up your .dtsi and .bin files.
 ```
 cd C:\Development\KriaKR260Projects\KriaAxiDma\axi_dma_demo\outputs
 scp pl.dtsi ubuntu@192.168.9.37:/home/ubuntu/development/axi_dma_demo/pl.dtsi
-scp axi_dma_demo ubuntu@192.168.9.37:/home/ubuntu/development/axi_dma_demo/axi_dma_demo.bin
+scp axi_dma_demo.bin ubuntu@192.168.9.37:/home/ubuntu/development/axi_dma_demo/axi_dma_demo.bin
 
 ```
 
