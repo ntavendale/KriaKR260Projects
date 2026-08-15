@@ -21,7 +21,7 @@ The fpga project was created in Vivado 2024.2 and the .tcl script to reproduce i
 1. Open Vivado, but do not open any project.
 1. In the Tcl console change to the appropriate directory:
 
-   cd c:/Development/KriaKR260Projects/KriaAxiDma
+   cd c:/Development/KriaKR260Projects/KriaAxiDma/firmware
 
 1. Now recreate the project:
 
@@ -36,7 +36,7 @@ After that you should be able to create the bit stream and export the hardware t
 When I do it I export the .xsa file as
 
 ```
- C:\Development\KriaKR260Projects\KriaAxiDma\axi_dma_demo\outputs\axi_dma_demo.xsa
+ C:\Development\KriaKR260Projects\KriaAxiDma\firmware\axi_dma_demo\outputs\axi_dma_demo.xsa
 ```
 
 You may also need to locate the .bin file. If the bit stream creation was successful it wil be in the _axi_dma_demo\axi_dma_demo.runs\impl_1_ directory (or some folder with a similar name). The file name will be _axi_dma_bd_wrapper.bin_. Copy it to the output directory with the .xsa file and rename it to _axi_dma_demo.bin_.
@@ -64,7 +64,7 @@ Open a command prompt (cmd.exe, not PowerShell). Before using the xsct you are g
 First go to your outputs directory with your .xsa file.
 
 ```
-cd C:\Development\KriaKR260Projects\KriaAxiDma\axi_dma_demo\outputs
+cd C:\Development\KriaKR260Projects\KriaAxiDma\firmware\axi_dma_demo\outputs
 ```
 
 Next run the batch file to setup your Vitis environment. You may get a file not found message. IO ignored it and everything worked just fine so you should be OK to ignore it to.
@@ -86,7 +86,7 @@ Generate outputs using XSCT console.
 **NOTE:** When describing the paths we use a forward slash, "/", as the path delimiter.
 
 ```
-xsct% hsi open_hw_design C:/Development/KriaKR260Projects/KriaAxiDma/axi_dma_demo/outputs/axi_dma_demo.xsa
+xsct% hsi open_hw_design C:/Development/KriaKR260Projects/KriaAxiDma/firmware/axi_dma_demo/outputs/axi_dma_demo.xsa
 
 xsct% hsi set_repo_path c:/Development/device-tree-xlnx
 
@@ -97,7 +97,7 @@ xsct% hsi set_property CONFIG.dt_overlay true [hsi::get_os]
 # If ZOCL is used (Maybe for Multi Channel DMWA, but not for this demo, so you can skip this line)
 xsct% hsi set_property CONFIG.dt_zocl true [hsi::get_os]
 
-xsct% hsi generate_target -dir C:/Development/KriaKR260Projects/KriaAxiDma/axi_dma_demo/outputs
+xsct% hsi generate_target -dir C:/Development/KriaKR260Projects/KriaAxiDma/firmware/axi_dma_demo/outputs
 
 xsct% hsi close_hw_design [hsi::current_hw_design]
 ```
