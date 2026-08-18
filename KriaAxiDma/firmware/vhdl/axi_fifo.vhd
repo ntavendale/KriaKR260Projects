@@ -2,6 +2,16 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+--Starting internal test
+--[156549.159588] start_transfer(RX1,0) (len=00000400)
+--[156549.159605] wait_for_transfer(RX1,0)
+--[156549.159624] start_transfer(TX0,0) (len=00000400)
+--[156549.159635] wait_for_transfer(TX0,0)
+--[156549.159652] xilinx-vdma a0000000.dma: Channel 00000000b5e39c8f has errors 10, cdr 0 tdr 0
+--[156549.167951] sync_callback
+--[156549.167967] sync_callback
+--[156549.168064] Internal test complete
+
 entity axi_fifo is
   generic (
     FIFO_WIDTH: integer := 32;
@@ -12,7 +22,7 @@ entity axi_fifo is
     aresetn       : in  std_logic; -- active low reset
 
     -- AXI slave (input) interface
-    s_axis_tready : out std_logic;
+    s_axis_tready : out std_logic := '0';
     s_axis_tvalid : in std_logic;
     s_axis_tlast : in std_logic;
     s_axis_tdata  : in std_logic_vector(FIFO_WIDTH - 1 downto 0);
@@ -37,12 +47,13 @@ architecture rtl of axi_fifo is
   subtype index_type is natural range fifo_array_type'range;
   signal head : index_type;
   signal tail : index_type;
-  signal count : index_type;
+  signal count : index_type := 0;
   signal count_p1 : index_type;
 
   -- Internal versions of entity signals with mode "out"
-  signal in_ready_i : std_logic;
-  signal out_valid_i : std_logic;
+  signal r_ready_to_receive : std_logic := '0';
+  
+  signal r_ready_to_send : std_logic := '0';
 
   -- True the clock cycle after a simultaneous read and write
   signal read_while_write_p1 : std_logic;
@@ -84,31 +95,37 @@ architecture rtl of axi_fifo is
 begin
 
   -- Copy internal signals to output
-  s_axis_tready <= in_ready_i;
-  m_axis_tvalid <= out_valid_i;
+  s_axis_tready <= r_ready_to_receive;
+  m_axis_tvalid <= r_ready_to_send;
 
   -- Update head index on write
-  PROC_HEAD : index_proc(aclk, aresetn, head, in_ready_i, s_axis_tvalid);
+  PROC_HEAD : index_proc(aclk, aresetn, head, r_ready_to_receive, s_axis_tvalid);
 
   -- Update tail index on read
-  PROC_TAIL : index_proc(aclk, aresetn, tail, m_axis_tready, out_valid_i);
+  PROC_TAIL : index_proc(aclk, aresetn, tail, m_axis_tready, r_ready_to_send);
 
   -- Write to and read from the RAM
   PROC_RAM : process(aclk)
   begin
     if rising_edge(aclk) then
-      fifo_array(head) <= s_axis_tdata;
-      m_axis_tdata <= fifo_array(next_index(tail, m_axis_tready, out_valid_i));
+      if (r_ready_to_receive = '1' and s_axis_tvalid = '1') then
+        fifo_array(head) <= s_axis_tdata;
+      end if;  
+      if (r_ready_to_send = '1' and m_axis_tready = '1') then
+        m_axis_tdata <= fifo_array(next_index(tail, m_axis_tready, r_ready_to_send));
+      end if;  
     end if;
   end process;
 
   -- Find the number of elements in the fifo array
   PROC_COUNT : process(head, tail)
   begin
-    if head < tail then
-      count <= head - tail + FIFO_DEPTH;
-    else
-      count <= head - tail;
+    if (r_ready_to_receive = '1' and s_axis_tvalid = '1') then
+      if head < tail then
+        count <= head - tail + FIFO_DEPTH;
+      else
+        count <= head - tail;
+      end if;  
     end if;
   end process;
 
@@ -125,12 +142,12 @@ begin
   end process;
 
   -- Set in_ready when the RAM isn't full
-  PROC_IN_READY : process(count)
+  PROC_IN_READY : process(count, aresetn)
   begin
-    if count < FIFO_DEPTH - 1 then
-      in_ready_i <= '1';
+    if (count < FIFO_DEPTH - 1) and (aresetn /= '0') then
+      r_ready_to_receive <= '1';
     else
-      in_ready_i <= '0';
+      r_ready_to_receive <= '0';
     end if;
   end process;
 
@@ -143,8 +160,8 @@ begin
 
       else
         read_while_write_p1 <= '0';
-        if in_ready_i = '1' and s_axis_tvalid = '1' and
-          m_axis_tready = '1' and out_valid_i = '1' then
+        if r_ready_to_receive = '1' and s_axis_tvalid = '1' and
+          m_axis_tready = '1' and r_ready_to_send = '1' then
           read_while_write_p1 <= '1';
         end if;
       end if;
@@ -152,20 +169,17 @@ begin
   end process;
 
   -- Set out_valid when the RAM outputs valid data
-  PROC_OUT_VALID : process(count, count_p1, read_while_write_p1)
+  PROC_OUT_VALID : process(count, count_p1, read_while_write_p1, aresetn)
   begin
-    out_valid_i <= '1';
-
     -- If the RAM is empty or was empty in the prev cycle
-    if count = 0 or count_p1 = 0 then
-      out_valid_i <= '0';
-    end if;
-
+    if count = 0 or count_p1 = 0 or aresetn = '0' then
+      r_ready_to_send <= '0';
     -- If simultaneous read and write when almost empty
-    if count = 1 and read_while_write_p1 = '1' then
-      out_valid_i <= '0';
+    elsif count = 1 and read_while_write_p1 = '1' then
+      r_ready_to_send <= '0';
+    else  
+      r_ready_to_send <= '1';
     end if;
-
   end process;
 
 end architecture;
