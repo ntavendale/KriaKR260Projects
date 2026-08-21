@@ -93,10 +93,14 @@ begin
     r_s_axis_tdata  <= x"00000050";
     wait until r_CLOCK = '1';
     r_s_axis_tdata  <= x"00000040";
-    r_m_axis_tready <= '0';
+    r_s_axis_tlast <= '1';
     wait until r_CLOCK = '1';
+    
     r_s_axis_tdata  <= x"00000030";
+    r_s_axis_tlast <= '0'; -- value aboove should be last
+    r_s_axis_tvalid <= '0';
     wait until r_CLOCK = '1';
+    
     r_s_axis_tdata  <= x"00000020";
     wait until r_CLOCK = '1';
     r_s_axis_tdata  <= x"00000010";

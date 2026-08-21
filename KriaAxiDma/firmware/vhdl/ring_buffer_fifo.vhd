@@ -14,9 +14,13 @@ entity ring_buffer_fifo is
     i_write_enabled : in std_logic;
     i_write_data    : in std_logic_vector(FIFO_WIDTH - 1 downto 0);
   
-    -- Read port
-    i_read_enabled : in std_logic;
-    o_read_valid   : out std_logic;
+    -- Read port:
+    -- if using this fifo pull i_read_enabled high to indicate that 
+    -- a data point is being read, and removed, from the head
+    i_read_enabled : in std_logic;  
+    -- there is valid data in the head positionrt that can be read 
+    -- and o_read_data will contain it 
+    o_read_valid   : out std_logic := '0'; 
     o_read_data    : out std_logic_vector(FIFO_WIDTH - 1 downto 0);
   
     -- Flags
@@ -31,8 +35,7 @@ entity ring_buffer_fifo is
 end ring_buffer_fifo;
 
 architecture rtl of ring_buffer_fifo is
-  type fifo_array_type is array (0 to FIFO_DEPTH - 1) of
-  std_logic_vector(i_write_data'range);
+  type fifo_array_type is array (0 to FIFO_DEPTH - 1) of std_logic_vector(i_write_data'range);
   
   signal fifo_array : fifo_array_type;
   
@@ -41,11 +44,11 @@ architecture rtl of ring_buffer_fifo is
   --       which is the range of the fifo_array_type above
   subtype index_type is Integer range fifo_array_type'range;
   
-  signal r_head : index_type;
-  signal r_tail : index_type;
+  signal r_head : index_type := 0;
+  signal r_tail : index_type := 0;
   
-  signal r_empty         : std_logic;
-  signal r_full          : std_logic;
+  signal r_empty         : std_logic := '1';
+  signal r_full          : std_logic := '0';
   signal r_element_count : Integer range FIFO_DEPTH - 1 downto 0;
   
   -- Increment and wrap
@@ -119,8 +122,6 @@ begin
       if (i_read_enabled = '1') then
         if (r_empty = '0') then
           o_read_data <= fifo_array(r_tail);
-        else
-          o_read_data <= (others => 'U');
         end if;  
       end if;
     end if;

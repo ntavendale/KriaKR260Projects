@@ -3,6 +3,13 @@ set_property BITSTREAM.CONFIG.OVERTEMPSHUTDOWN ENABLE [current_design]
 # compress the bitstream to make it smaller
 set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
 
+# Map the external port to the KR260 25MHz onboard oscillator
+set_property PACKAGE_PIN C3 [get_ports ext_clk_25m]
+set_property IOSTANDARD LVCMOS18 [get_ports ext_clk_25m]
+
+# Define the clock constraints for the Vivado timing analyzer
+create_clock -period 40.000 -name ext_clk_25m [get_ports ext_clk_25m]
+
 #Fan Speed Enable
 set_property PACKAGE_PIN A12 [get_ports {fan_en_b}]
 set_property IOSTANDARD LVCMOS33 [get_ports {fan_en_b}]
