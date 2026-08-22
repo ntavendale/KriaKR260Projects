@@ -1,16 +1,19 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
---Starting internal test
---[156549.159588] start_transfer(RX1,0) (len=00000400)
---[156549.159605] wait_for_transfer(RX1,0)
---[156549.159624] start_transfer(TX0,0) (len=00000400)
---[156549.159635] wait_for_transfer(TX0,0)
---[156549.159652] xilinx-vdma a0000000.dma: Channel 00000000b5e39c8f has errors 10, cdr 0 tdr 0
---[156549.167951] sync_callback
---[156549.167967] sync_callback
---[156549.168064] Internal test complete
+-- We are taking an axit stream and pipeing if right back out again as a FIFO
+-- We indicate on an external periheral, in this cas a Digilent Pmod 8LD 
+-- with 8 high brightness LEDs (https://digilent.com/shop/pmod-8ld-eight-high-brightness-leds/)
+-- each time a TLAST come through indicating a transfer is going through.
 
+-- Doesn't Vivado supply an Axi FIFO IP block? 
+-- Yes it does, but not the code to go woith it. The point of this is to learn how DMA
+-- and Axi streaming works and to do that I wrote my own Axi Stream IO block in VHDL 
+-- which I then added to the block diagram. 
+-- To work with external peripherals in the futurte I need to be able to get the data off the 
+-- stream myself and strsam the replies back.  
+  
 entity axi_stream_io is
   generic (
     FIFO_WIDTH: integer := 32;
@@ -32,7 +35,17 @@ entity axi_stream_io is
     m_axis_tvalid : out std_logic;
     m_axis_tlast : out std_logic := '0';
     m_axis_tdata  : out std_logic_vector(FIFO_WIDTH - 1 downto 0);
-    m_axis_tkeep  : out std_logic_vector((FIFO_WIDTH / 8) - 1 downto 0) := (others => '1')
+    m_axis_tkeep  : out std_logic_vector((FIFO_WIDTH / 8) - 1 downto 0) := (others => '1');
+    
+    -- PMOD1 OUTPUTS
+    pmod_1_01: out std_logic;
+    pmod_1_02: out std_logic;
+    pmod_1_03: out std_logic;
+    pmod_1_04: out std_logic;
+    pmod_1_07: out std_logic;
+    pmod_1_08: out std_logic;
+    pmod_1_09: out std_logic;
+    pmod_1_10: out std_logic
   );
 end axi_stream_io;
 
@@ -45,6 +58,8 @@ architecture rtl of axi_stream_io is
   signal r_fifo_empty      : std_logic := '0';
   signal r_s_axis_tdata    : std_logic_vector(FIFO_WIDTH downto 0);
   signal r_m_axis_tdata    : std_logic_vector(FIFO_WIDTH downto 0);
+  
+  signal r_led_state       : std_logic_vector(7 downto 0) := (others => '0');
 begin
   r_fifo_reset <= not aresetn;
   -- slave signals (input)
@@ -75,5 +90,30 @@ begin
       o_full => r_fifo_full,
       o_read_valid => r_fifo_read_valid,
       o_read_data => r_m_axis_tdata);
+      
+  SET_LED: process(s_axis_tlast)
+  begin
+    -- light only one LED ata time
+    if rising_edge(s_axis_tlast) then
+      if r_led_state = (r_led_state'range => '0') then
+        r_led_state <= "00000001";
+      else
+        r_led_state <= std_logic_vector( shift_left(unsigned(r_led_state), 1) );
+      end if; 
+    end if;
+  end process;
+  
+  -- Map the eight element vector to tthe PMOD ports to drive the external peripheral
+  -- in this cas a Digilent Pmod 8LD with 8 high brightness LEDs 
+  -- https://digilent.com/shop/pmod-8ld-eight-high-brightness-leds/ 
+  pmod_1_01 <= r_led_state(0);
+  pmod_1_02 <= r_led_state(1);
+  pmod_1_03 <= r_led_state(2);
+  pmod_1_04 <= r_led_state(3);
+  
+  pmod_1_07 <= r_led_state(4);
+  pmod_1_08 <= r_led_state(5);
+  pmod_1_09 <= r_led_state(6);
+  pmod_1_10 <= r_led_state(7);    
      
 end rtl;
