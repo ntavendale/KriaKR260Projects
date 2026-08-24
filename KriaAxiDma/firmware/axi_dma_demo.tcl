@@ -39,11 +39,11 @@
 proc checkRequiredFiles { origin_dir} {
   set status true
   set files [list \
- "[file normalize "$origin_dir/axi_dma_demo/axi_dma_demo.srcs/sources_1/imports/vhdl/ring_buffer_fifo.vhd"]"\
- "[file normalize "$origin_dir/axi_dma_demo/axi_dma_demo.srcs/sources_1/imports/vhdl/axi_stream_io.vhd"]"\
- "[file normalize "$origin_dir/axi_dma_demo/axi_dma_demo.srcs/constrs_1/imports/constraints/top.xdc"]"\
- "[file normalize "$origin_dir/axi_dma_demo/axi_dma_demo.srcs/sim_1/imports/vhdl/axi_stream_io_tb.vhd"]"\
- "[file normalize "$origin_dir/axi_dma_demo/axi_dma_demo.srcs/sim_1/imports/vhdl/ring_buffer_fifo_tb.vhd"]"\
+ "[file normalize "vhdl/ring_buffer_fifo.vhd"]"\
+ "[file normalize "vhdl/axi_stream_io.vhd"]"\
+ "[file normalize "constraints/top.xdc"]"\
+ "[file normalize "vhdl/axi_stream_io_tb.vhd"]"\
+ "[file normalize "vhdl/ring_buffer_fifo_tb.vhd"]"\
   ]
   foreach ifile $files {
     if { ![file isfile $ifile] } {
@@ -174,8 +174,8 @@ if {[string equal [get_filesets -quiet sources_1] ""]} {
 set obj [get_filesets sources_1]
 # Import local files from the original project
 set files [list \
- [file normalize "${origin_dir}/axi_dma_demo/axi_dma_demo.srcs/sources_1/imports/vhdl/ring_buffer_fifo.vhd"]\
- [file normalize "${origin_dir}/axi_dma_demo/axi_dma_demo.srcs/sources_1/imports/vhdl/axi_stream_io.vhd"]\
+ [file normalize "vhdl/ring_buffer_fifo.vhd"]\
+ [file normalize "vhdl/axi_stream_io.vhd"]\
 ]
 set imported_files ""
 foreach f $files {
@@ -186,11 +186,11 @@ foreach f $files {
 # None
 
 # Set 'sources_1' fileset file properties for local files
-set file "vhdl/ring_buffer_fifo.vhd"
+set file "ring_buffer_fifo.vhd"
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "file_type" -value "VHDL" -objects $file_obj
 
-set file "vhdl/axi_stream_io.vhd"
+set file "axi_stream_io.vhd"
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "file_type" -value "VHDL" -objects $file_obj
 
@@ -210,9 +210,9 @@ if {[string equal [get_filesets -quiet constrs_1] ""]} {
 set obj [get_filesets constrs_1]
 
 # Add/Import constrs file and set constrs file properties
-set file "[file normalize ${origin_dir}/axi_dma_demo/axi_dma_demo.srcs/constrs_1/imports/constraints/top.xdc]"
+set file "[file normalize constraints/top.xdc]"
 set file_imported [import_files -fileset constrs_1 [list $file]]
-set file "constraints/top.xdc"
+set file "top.xdc"
 set file_obj [get_files -of_objects [get_filesets constrs_1] [list "*$file"]]
 set_property -name "file_type" -value "XDC" -objects $file_obj
 
@@ -228,8 +228,8 @@ if {[string equal [get_filesets -quiet sim_1] ""]} {
 set obj [get_filesets sim_1]
 # Import local files from the original project
 set files [list \
- [file normalize "${origin_dir}/axi_dma_demo/axi_dma_demo.srcs/sim_1/imports/vhdl/axi_stream_io_tb.vhd"]\
- [file normalize "${origin_dir}/axi_dma_demo/axi_dma_demo.srcs/sim_1/imports/vhdl/ring_buffer_fifo_tb.vhd"]\
+ [file normalize "vhdl/axi_stream_io_tb.vhd"]\
+ [file normalize "vhdl/ring_buffer_fifo_tb.vhd"]\
 ]
 set imported_files ""
 foreach f $files {
@@ -240,11 +240,11 @@ foreach f $files {
 # None
 
 # Set 'sim_1' fileset file properties for local files
-set file "vhdl/axi_stream_io_tb.vhd"
+set file "axi_stream_io_tb.vhd"
 set file_obj [get_files -of_objects [get_filesets sim_1] [list "*$file"]]
 set_property -name "file_type" -value "VHDL" -objects $file_obj
 
-set file "vhdl/ring_buffer_fifo_tb.vhd"
+set file "ring_buffer_fifo_tb.vhd"
 set file_obj [get_files -of_objects [get_filesets sim_1] [list "*$file"]]
 set_property -name "file_type" -value "VHDL" -objects $file_obj
 
