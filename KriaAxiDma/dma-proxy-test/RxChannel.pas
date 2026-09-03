@@ -83,7 +83,7 @@ begin
         begin
           if AChannel^.ChannelBuffers^[buffer_id].Buffer[j] <> (received_value + j) then
           begin
-            WriteLn(Format('Buffer contents not equal, buffer_id = %d, data point %d, data = %d expected data = %d', [i,j,  AChannel^.ChannelBuffers^[buffer_id].Buffer[i], received_value + j]));
+            WriteLn(Format('Buffer contents not equal, buffer_id = %d, data point %d, data = %d expected data = %d', [i,j,  AChannel^.ChannelBuffers^[buffer_id].Buffer[j], received_value + j]));
             BREAK;
           end;
         end;  
