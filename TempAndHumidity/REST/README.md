@@ -2,11 +2,15 @@
 
 REST application to read write from hygrometer.
 
-Pascal is much more strongly typed than C so there are more explicit type definitions and we try to avoid the use of opaque pointers.
+First clone the mORMot2 github repository:
+
+```
+git clone https://github.com/synopse/mORMot2.git /home/ubuntu/development/mORMot2
+```
 
 To build:
 ```
-fpc -ohygrometer hygrometer.dpr
+./do_build.sh
 ```
 
 To run:

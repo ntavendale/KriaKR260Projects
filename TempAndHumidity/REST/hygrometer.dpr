@@ -1,4 +1,6 @@
 {$MODE DELPHIUNICODE}
+
+{$I mormot.defines.inc}
 program hygrometer;
 
 uses
@@ -6,7 +8,8 @@ uses
   // To resolve this issue, you must include the cThreads unit as the VERY FIRST
   // unit in the uses clause of your main program file when working on Posix systems.
   // We won't bother with an ifdef since this is a linux only project.
-  cThreads, 
+  {$I mormot.uses.inc}
+  //cThreads, 
   SysUtils,
   Unix, 
   BaseUnix,
@@ -15,6 +18,12 @@ uses
   UnixType,
   PThreads,
   Math,
+  mormot.core.base,
+  mormot.core.os,
+  mormot.core.log,
+  mormot.orm.core,
+  mormot.db.raw.sqlite3,
+  mormot.rest.http.server,
   DmaTypes in 'DmaTypes.pas',
   Utilities in 'Utilities.pas',
   TxChannel in 'TxChannel.pas',
