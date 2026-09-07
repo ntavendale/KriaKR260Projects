@@ -18,49 +18,65 @@ uses
   UnixType,
   PThreads,
   Math,
+  RestServerMain,
   mormot.core.base,
   mormot.core.os,
   mormot.core.log,
   mormot.orm.core,
-  mormot.db.raw.sqlite3,
   mormot.rest.http.server,
   DmaTypes in 'DmaTypes.pas',
   Utilities in 'Utilities.pas',
   TxChannel in 'TxChannel.pas',
   RxChannel in 'RxChannel.pas';
 
-procedure ShowUsage;
-begin
-  WriteLn('Usage:');
-  WriteLn('  dmaProxyTest <# of DMA transfers to perform> <# of bytes in each transfer in KB (< 1MB)> <optional verify, 0 or 1>');
-end;
-
-// Setup the transmit and receive threads so that the transmit thread is low priority to help prevent it from 
-// overrunning the receive since most testing is done without any backpressure to the transmit channel.
 var
-  data_read: Cardinal;
-  max_channel_count: Integer;
+  KeepRunning: Boolean = TRUE;
+
+procedure HandleSignal(Sig: LongInt); cdecl;
 begin
-  try
-    TUtilities.DataIn := StrToInt(ParamStr(1));
-  except
-    ShowUsage;
-    Exit;
+  case Sig of
+    SIGTERM, SIGINT: 
+      begin
+        // Set the flag to break the main loop
+        KeepRunning := False;
+      end;
   end;
-  WriteLn('hygrometer test (', ParamCount, ')');
-  WriteLn(Format('  Data In     : %d', [TUtilities.DataIn]));
+end;  
 
-  WriteLn(Format('  TxChannelBuffer Size Size : %d Bytes', [SizeOf(TChannelBuffer)]));
-  WriteLn(Format('  TxChannel Size Size       : %d Bytes', [SizeOf(TTxChannel)]));
-  WriteLn(Format('  RxChannel Size Size       : %d Bytes', [SizeOf(TRxChannel)]));
+var 
+  LRestServerMain : TRestServerMain;
+  NewAct, OldAct: SigActionRec;
+begin
+  
+  FillChar(NewAct, SizeOf(NewAct), 0);
+  NewAct.sa_Handler := @HandleSignal;
+  fpSigEmptySet(NewAct.sa_Mask);
+  NewAct.sa_Flags := 0;
 
-  max_channel_count := Max(TX_CHANNEL_COUNT, RX_CHANNEL_COUNT);
+  // Register handlers for termination signals
+  fpSigAction(SIGTERM, @NewAct, @OldAct);
+  fpSigAction(SIGINT,  @NewAct, @OldAct);
 
-  SendData(TUtilities.DataIn);
-  data_read := ReadData;
-  WriteLn(Format('Data Read  0x%.8x', [data_read]));
+  writeln('Daemon started. Press Ctrl+C or use "kill" to stop.');
 
-  WriteLn('');
-  WriteLn('So long and thanks for all the fish!');
-  WriteLn('DMA proxy test complete');
+  KeepRunning := TRUE;
+  LRestServerMain := TRestServerMain.Create;
+  try
+    try
+      if LRestServerMain.RunServer('8080') then
+      begin
+        while KeepRunning do Sleep(1000);
+      end else
+        WriteLn('Something went wrong...');
+    except
+      on E: Exception do
+      begin
+        WriteLn(E.Message);
+        ExitCode := 1;
+      end;
+    end;
+    ConsoleWaitForEnterKey;
+  finally
+    LRestServerMain.Free;    
+  end;
 end.
