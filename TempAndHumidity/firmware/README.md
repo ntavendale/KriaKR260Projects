@@ -190,14 +190,14 @@ You should see something like the out put below:
 ```
 Accelerator          Accel_type                            Base           Base_type      #slots(PL+AIE)         Active_slot
 
-hygrometer           XRT_FLAT                       axi_dma_demo            XRT_FLAT               (0+0)                  -1,
+hygrometer           XRT_FLAT                         hygrometer            XRT_FLAT               (0+0)                  -1,
 ```
 
 Unload any overlay if you have one loaded, then load the new one
 
 ```
 sudo xmutil unloadapp
-sudo xmutil loadapp axi_dma_demo
+sudo xmutil loadapp hygrometer
 ```
 
 List the apps again using xmutil and you should now see axi_dma_demo in Active_slot 0.
