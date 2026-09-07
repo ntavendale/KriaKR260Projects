@@ -10,7 +10,7 @@ git clone https://github.com/synopse/mORMot2.git /home/ubuntu/development/mORMot
 
 To build:
 ```
-./do_build.sh
+./do_build.sh hygrometer.dpr
 ```
 
 To run:

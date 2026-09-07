@@ -40,9 +40,6 @@ end;
 var
   data_read: Cardinal;
   max_channel_count: Integer;
-  mb_sec: Double;
-  channel_name: String;
-  start_time, end_time, time_diff: Uint64;
 begin
   try
     TUtilities.DataIn := StrToInt(ParamStr(1));
