@@ -24,12 +24,60 @@ type
 var
   RxChannels: array[0 .. (RX_CHANNEL_COUNT -1)] of TRxChannel;
 
+
+function ReadData: Cardinal;
 // The following function is the transmit thread to allow the transmit and the receive channels to be
 // operating simultaneously. Some of the ioctl calls are blocking so that multiple threads are required.
-function RxThread(AChannel: PRxChannel): Pointer;  
+//function RxThread(AChannel: PRxChannel): Pointer;  
 
 implementation
 
+function ReadData: Cardinal;
+var 
+  ioctl_result, buffer_id: Integer;
+  channel_name: String;
+begin
+  channel_name := '/dev/' + RxChannelNames[0];
+  buffer_id := 0;
+  RxChannels[buffer_id].FileDescriptor := fpOpen(channel_name, O_RDWR);
+  if RxChannels[buffer_id].FileDescriptor < 1 then
+  begin
+    WriteLn(Format('Unable to open DMA proxy device file: %s', [channel_name]));
+    Result := 0;
+    Exit;
+  end;
+  try
+    RxChannels[buffer_id].ChannelBuffers := PRxChannelBuffers(fpMmap(nil, sizeof(TRxChannelBuffers), PROT_READ or PROT_WRITE, MAP_SHARED, RxChannels[buffer_id].FileDescriptor, 0));
+    if (RxChannels[buffer_id].ChannelBuffers = MAP_FAILED) then 
+    begin
+      WriteLn('Failed to mmap rx channel');
+      Result := 0;
+      Exit;
+    end;
+
+    RxChannels[buffer_id].ChannelBuffers^[0].Length := 4; // 4 bytes only
+
+    // Start the DMA transfer and this call is non-blocking
+    ioctl_result := fpIoctl(RxChannels[buffer_id].FileDescriptor, START_XFER, @buffer_id);
+    if 0 <> ioctl_result then
+      WriteLn(Format('fpIoctl START_XFER returned: %d', [ioctl_result]));
+
+    ioctl_result := fpIoctl(RxChannels[buffer_id].FileDescriptor, FINISH_XFER, @buffer_id);  
+    if 0 <> ioctl_result then
+      WriteLn(Format('fpIoctl FINISH_XFER returned: %d', [ioctl_result]));
+
+    if (RxChannels[buffer_id].ChannelBuffers^[0].Status <> psNoError) then
+      WriteLn(Format('Proxy rx transfer error %s', [ProxyStatusToString(RxChannels[buffer_id].ChannelBuffers^[0].Status)]));
+
+    Result := RxChannels[buffer_id].ChannelBuffers^[0].Buffer[0];
+    fpMunmap(RxChannels[buffer_id].ChannelBuffers, SizeOf(TRxChannelBuffers));
+
+  finally
+    fpClose(RxChannels[0].FileDescriptor);
+  end;
+end;
+
+(*
 function RxThread(AChannel: PRxChannel): Pointer;
 var
   i, j, in_progress_count, received_value, buffer_id,rx_counter: Integer;
@@ -44,8 +92,8 @@ begin
   begin
     // Don't worry about initializing the receive buffers as the pattern used in the
     // transmit buffers is unique across every transfer so it should catch errors.
-    
-    AChannel^.ChannelBuffers^[buffer_id].Length := TUtilities.TestSizeBytes;
+    // Only want 4 bytes back
+    AChannel^.ChannelBuffers^[buffer_id].Length := 4;//TUtilities.TestSizeBytes;
     
     fpIoctl(AChannel^.FileDescriptor, START_XFER, @buffer_id);
     // Handle the case of a specified number of transfers that is less than the number
@@ -76,12 +124,18 @@ begin
     // A unique value in the buffers is used across all transfers
     if TUtilities.Verify then
     begin
+      WriteLn(Format('Verifying. TX_BUFFER_COUNT = %d', [TX_BUFFER_COUNT]));
       for i := 0 to (TX_BUFFER_COUNT - 1) do // test_size / sizeof(unsigned int); i++) this is slow
       begin
         received_value := i + rx_counter;
         for j := 0 to (BUFFER_ARRAY_LENGTH - 1) do
         begin
-          if AChannel^.ChannelBuffers^[buffer_id].Buffer[j] <> (received_value + j) then
+          if (j <> 0) and (AChannel^.ChannelBuffers^[i].Buffer[j] <> (received_value + j)) then
+          begin
+            WriteLn(Format('Buffer contents not equal, buffer_id = %d, data point %d, data = %d expected data = %d', [i,j,  AChannel^.ChannelBuffers^[buffer_id].Buffer[j], received_value + j]));
+            BREAK;
+          end;
+          if (j = 0) and (AChannel^.ChannelBuffers^[i].Buffer[j] <> 12) then
           begin
             WriteLn(Format('Buffer contents not equal, buffer_id = %d, data point %d, data = %d expected data = %d', [i,j,  AChannel^.ChannelBuffers^[buffer_id].Buffer[j], received_value + j]));
             BREAK;
@@ -120,6 +174,6 @@ begin
 
   Result := nil;
 end;
+*)
 
-begin
 end.

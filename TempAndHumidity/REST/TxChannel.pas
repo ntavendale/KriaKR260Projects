@@ -1,0 +1,74 @@
+{$MODE DELPHIUNICODE}
+unit TxChannel;
+
+interface 
+
+uses
+  SysUtils, Classes, Unix, BaseUnix, Linux, DmaTypes, Utilities;
+
+const 
+  TX_CHANNEL_COUNT = 1;  
+  TxChannelNames: array [0..(TX_CHANNEL_COUNT -1)] of String = ('dma_proxy_tx'); //add unique channel names here 
+
+type 
+  PTxChannelBuffers = ^TTxChannelBuffers;
+  TTxChannelBuffers = array[0..(TX_BUFFER_COUNT - 1)] of TChannelBuffer;
+
+  PTxChannel = ^TTxChannel;
+  TTxChannel = record
+    ChannelBuffers: PTxChannelBuffers;
+    FileDescriptor: Integer;
+	  ThreadId: Uint64;
+  end;
+
+var
+  TxChannels: array[0 .. (TX_CHANNEL_COUNT -1)] of TTxChannel;
+
+function SendData(AData: Cardinal): Boolean;
+
+implementation
+
+function SendData(AData: Cardinal): Boolean;
+var 
+  ioctl_result, buffer_id: Integer;
+  channel_name: String;
+begin
+  channel_name := '/dev/' + TxChannelNames[0];
+  buffer_id := 0;
+  TxChannels[buffer_id].FileDescriptor := fpOpen(channel_name, O_RDWR);
+  if TxChannels[buffer_id].FileDescriptor < 1 then
+  begin
+    WriteLn(Format('Unable to open DMA proxy device file: %s', [channel_name]));
+    Result := FALSE;
+    Exit;
+  end;
+  try
+    TxChannels[buffer_id].ChannelBuffers := PTxChannelBuffers(fpMmap(nil, SizeOf(TTxChannelBuffers), PROT_READ or PROT_WRITE, MAP_SHARED, TxChannels[buffer_id].FileDescriptor, 0));
+    if (TxChannels[buffer_id].ChannelBuffers = MAP_FAILED) then 
+    begin
+      WriteLn('Failed to mmap tx channel');
+      Result := FALSE;
+      Exit;
+    end;
+
+    TxChannels[buffer_id].ChannelBuffers^[0].Length := 4; // 4 bytes only
+    TxChannels[buffer_id].ChannelBuffers^[0].Buffer[0] := AData;
+
+    // Start the DMA transfer and this call is non-blocking
+    ioctl_result := fpIoctl(TxChannels[buffer_id].FileDescriptor, START_XFER, @buffer_id);
+    if 0 <> ioctl_result then
+      WriteLn(Format('fpIoctl returned: %d', [ioctl_result]));
+
+    fpIoctl(TxChannels[buffer_id].FileDescriptor, FINISH_XFER, @buffer_id);  
+
+    if (TxChannels[buffer_id].ChannelBuffers^[0].Status <> psNoError) then
+      WriteLn(Format('Proxy tx transfer error %s', [ProxyStatusToString(TxChannels[buffer_id].ChannelBuffers^[0].Status)]));
+
+    fpMunmap(TxChannels[buffer_id].ChannelBuffers, SizeOf(TTxChannelBuffers));
+  finally
+    fpClose(TxChannels[0].FileDescriptor);
+  end;
+  Result := TRUE;
+end;
+
+end.
