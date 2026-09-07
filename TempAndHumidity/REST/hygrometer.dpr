@@ -62,7 +62,6 @@ begin
   SendData(TUtilities.DataIn);
   data_read := ReadData;
   WriteLn(Format('Data Read  0x%.8x', [data_read]));
-  Exit;
 
   WriteLn('');
   WriteLn('So long and thanks for all the fish!');
