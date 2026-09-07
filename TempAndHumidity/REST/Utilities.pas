@@ -9,29 +9,14 @@ uses
 type 
   TUtilities = class
   private
-    class var FStop: Boolean;
-    class var FVerify: Boolean;
-    class var FTransferCount: Cardinal;
-    class var FDataCountKilobytes: Cardinal;
-    class function GetTestSizeBytes: Cardinal; static;
+    class var FDataIn: Cardinal;
   public
     class function get_posix_clock_time_usec: UInt64;
-    class property Stop: Boolean read FStop write FStop;
-    class property Verify: Boolean read FVerify write FVerify;
-    class property TransferCount: Cardinal read FTransferCount write FTransferCount;
-    class property TestSizeKb: Cardinal read FDataCountKilobytes write FDataCountKilobytes;
-    class property TestSizeBytes: Cardinal read GetTestSizeBytes;
+    class property DataIn: Cardinal read FDataIn write FDataIn;
   end;
 
 
 implementation
-
-class function TUtilities.GetTestSizeBytes: Cardinal;
-begin
-  Result := FDataCountKilobytes * 1024;
-  if (Result > BUFFER_SIZE_BYTES) then
-    Result := BUFFER_SIZE_BYTES;
-end;
 
 class function TUtilities.get_posix_clock_time_usec: UInt64;
 var

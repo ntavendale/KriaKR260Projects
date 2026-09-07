@@ -24,103 +24,51 @@ type
 var
   TxChannels: array[0 .. (TX_CHANNEL_COUNT -1)] of TTxChannel;
 
-// The following function is the transmit thread to allow the transmit and the receive channels to be
-// operating simultaneously. Some of the ioctl calls are blocking so that multiple threads are required.
-function TxThread(AChannel: PTxChannel): Pointer;
+function SendData(AData: Cardinal): Boolean;
 
 implementation
 
-function TxThread(AChannel: PTxChannel): Pointer;
-var
-  i, counter, buffer_id, in_progress_count, sent_value, ioctl_result: Integer;
-  stop_in_progress: Boolean;
+function SendData(AData: Cardinal): Boolean;
+var 
+  ioctl_result, buffer_id: Integer;
+  channel_name: String;
 begin
-  WriteLn('Starting Tx thread');
-  counter := 0;
-  in_progress_count := 0;
+  channel_name := '/dev/' + TxChannelNames[0];
   buffer_id := 0;
-  stop_in_progress := FALSE;
-
-  while (buffer_id < TX_BUFFER_COUNT) do
+  TxChannels[buffer_id].FileDescriptor := fpOpen(channel_name, O_RDWR);
+  if TxChannels[buffer_id].FileDescriptor < 1 then
   begin
-    AChannel^.ChannelBuffers^[buffer_id].Length := TUtilities.TestSizeBytes;
-    if TUtilities.Verify then
+    WriteLn(Format('Unable to open DMA proxy device file: %s', [channel_name]));
+    Result := FALSE;
+    Exit;
+  end;
+  try
+    TxChannels[buffer_id].ChannelBuffers := PTxChannelBuffers(fpMmap(nil, SizeOf(TTxChannelBuffers), PROT_READ or PROT_WRITE, MAP_SHARED, TxChannels[buffer_id].FileDescriptor, 0));
+    if (TxChannels[buffer_id].ChannelBuffers = MAP_FAILED) then 
     begin
-      sent_value := 0;
-      for i := 0 to (BUFFER_ARRAY_LENGTH - 1) do
-      begin
-        AChannel^.ChannelBuffers^[buffer_id].Buffer[i] := sent_value + i;
-      end;  
-      WriteLn(Format('Tx[%d].Buffer[0]: %d', [buffer_id, AChannel^.ChannelBuffers^[buffer_id].Buffer[0]]));
-      WriteLn(Format('Tx[%d].Buffer[%d]: %d', [buffer_id, BUFFER_ARRAY_LENGTH - 1, AChannel^.ChannelBuffers^[buffer_id].Buffer[BUFFER_ARRAY_LENGTH - 1]]));
+      WriteLn('Failed to mmap tx channel');
+      Result := FALSE;
+      Exit;
     end;
-    
-    WriteLn('Start Tx Transfer');
+
+    TxChannels[buffer_id].ChannelBuffers^[0].Length := 4; // 4 bytes only
+    TxChannels[buffer_id].ChannelBuffers^[0].Buffer[0] := AData;
+
     // Start the DMA transfer and this call is non-blocking
-    ioctl_result := fpIoctl(AChannel^.FileDescriptor, START_XFER, @buffer_id);
+    ioctl_result := fpIoctl(TxChannels[buffer_id].FileDescriptor, START_XFER, @buffer_id);
     if 0 <> ioctl_result then
       WriteLn(Format('fpIoctl returned: %d', [ioctl_result]));
 
-    // Keep track of the number of transfers that are in progress and if the number is less
-    // than the number of channel buffers then stop before all channel buffers are used
-    Inc(in_progress_count);
-		if in_progress_count >= TUtilities.TransferCount then
-			BREAK;
+    fpIoctl(TxChannels[buffer_id].FileDescriptor, FINISH_XFER, @buffer_id);  
 
-    Inc(buffer_id, BUFFER_INCREMENT);
+    if (TxChannels[buffer_id].ChannelBuffers^[0].Status <> psNoError) then
+      WriteLn(Format('Proxy tx transfer error %s', [ProxyStatusToString(TxChannels[buffer_id].ChannelBuffers^[0].Status)]));
+
+    fpMunmap(TxChannels[buffer_id].ChannelBuffers, SizeOf(TTxChannelBuffers));
+  finally
+    fpClose(TxChannels[0].FileDescriptor);
   end;
-
-  // Start finishing up the DMA transfers that were started beginning with the 1st channel buffer.
-  buffer_id := 0; // Reset buffer_id to access channels from beginning of array again.
-  while (TRUE) do
-  begin
-    // Perform the DMA transfer and check the status after it completes
-    // as the call blocks til the transfer is done.
-    WriteLn('Finish Tx Transfer');
-    fpIoctl(AChannel^.FileDescriptor, FINISH_XFER, @buffer_id);
-    if (AChannel.ChannelBuffers^[buffer_id].Status <> psNoError) then
-      WriteLn(Format('Proxy tx transfer error %s', [ProxyStatusToString(AChannel^.ChannelBuffers^[buffer_id].Status)]));
-    // Keep track of how many transfers are in progress and how many completed
-    Dec(in_progress_count);
-    Inc(counter);
-    
-    // If all the transfers are done then exit
-    if (counter >= TUtilities.TransferCount) then
-      BREAK;
-    // If an early stop (control c or kill) has happened then exit gracefully
-    // letting all transfers queued up be completed, but it's trickier because
-    // the number of transmit vs receive channel buffers can be very different
-    // which means another X transfers need to be done gracefully shutdown the
-    // receive without leaving transfers in progress which is unrecoverable
-    if (TUtilities.Stop and not stop_in_progress)  then
-    begin
-      stop_in_progress := TRUE;
-      TUtilities.TransferCount := counter + RX_BUFFER_COUNT;
-    end;
-    
-    // If the ones in progress will complete the count then don't start more
-    if ((counter + in_progress_count) >= TUtilities.TransferCount) then
-    begin
-      buffer_id := buffer_id + BUFFER_INCREMENT;
-      buffer_id := buffer_id mod TX_BUFFER_COUNT;
-      CONTINUE;
-    end;
-
-    // Initialize the buffer and perform the DMA transfer, check the status after it completes
-    // as the call blocks til the transfer is done.
-    if (TUtilities.Verify) then
-    begin
-      for i := 0 to (TUtilities.TestSizeBytes div sizeof(Cardinal)) -1 do
-        AChannel^.ChannelBuffers^[buffer_id].Buffer[i] := i + ((TX_BUFFER_COUNT div BUFFER_INCREMENT) - 1) + counter;
-    end;
-    
-    // Restart the completed channel buffer to start another transfer and keep
-    // track of the number of transfers in progress
-    fpIoctl(AChannel^.FileDescriptor, START_XFER, @buffer_id);
-    Inc(in_progress_count);
-  end;
-  Result := nil;
+  Result := TRUE;
 end;
 
-begin
 end.
