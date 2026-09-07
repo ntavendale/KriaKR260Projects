@@ -17,7 +17,6 @@ entity axi_stream_io_tb is
 end axi_stream_io_tb;
 
 architecture Behavioral of axi_stream_io_tb is
-  constant c_DEPTH : integer := 8;
   constant c_WIDTH : integer := 32;
   
   signal r_reset : std_logic := '1';
@@ -38,8 +37,7 @@ begin
   r_clock <= not r_clock after 5 ns;  
   Unit_Under_Test : entity work.axi_stream_io
     generic map (
-      FIFO_WIDTH => c_WIDTH,
-      FIFO_DEPTH => c_DEPTH
+      DATA_WIDTH => c_WIDTH
       )
     port map (
       aclk => r_clock,
@@ -97,7 +95,7 @@ begin
     wait until r_CLOCK = '1';
     
     r_s_axis_tdata  <= x"00000030";
-    r_s_axis_tlast <= '0'; -- value aboove should be last
+    r_s_axis_tlast <= '0'; -- value above should be last
     r_s_axis_tvalid <= '0';
     wait until r_CLOCK = '1';
     

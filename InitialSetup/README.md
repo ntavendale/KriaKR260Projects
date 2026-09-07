@@ -131,10 +131,16 @@ Then install make
 $ sudo apt-get install -y make
 ```
 
-And then finally we install a pascal compiler, in our case fpc.
+Install a pascal compiler, in our case fpc.
 
 **Note**: Delphi has an ARM compiler for windows and a Linux compiler for x86. It does not yet have a Linux compiler for ARM, so we will have to use free pascal at this time.
 
 ```
 $ sudo apt install -y fpc
+```
+
+Install 7 zip (for mOrmot2)
+
+```
+sudo apt install 7zip
 ```

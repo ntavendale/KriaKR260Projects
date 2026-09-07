@@ -16,8 +16,7 @@ use ieee.numeric_std.all;
   
 entity axi_stream_io is
   generic (
-    FIFO_WIDTH: integer := 32;
-    FIFO_DEPTH: integer := 128
+    DATA_WIDTH: Integer := 32
   );
   port (
     aclk          : in  std_logic;
@@ -27,15 +26,15 @@ entity axi_stream_io is
     s_axis_tready : out std_logic := '0';
     s_axis_tvalid : in std_logic;
     s_axis_tlast  : in std_logic;
-    s_axis_tdata  : in std_logic_vector(FIFO_WIDTH - 1 downto 0);
-    s_axis_tkeep  : in std_logic_vector((FIFO_WIDTH / 8) - 1 downto 0);
+    s_axis_tdata  : in std_logic_vector(DATA_WIDTH - 1 downto 0);
+    s_axis_tkeep  : in std_logic_vector((DATA_WIDTH/8) - 1 downto 0);
     
     -- AXI master (output_ interface
     m_axis_tready : in std_logic;
     m_axis_tvalid : out std_logic;
     m_axis_tlast : out std_logic := '0';
-    m_axis_tdata  : out std_logic_vector(FIFO_WIDTH - 1 downto 0);
-    m_axis_tkeep  : out std_logic_vector((FIFO_WIDTH / 8) - 1 downto 0) := (others => '1');
+    m_axis_tdata  : out std_logic_vector(DATA_WIDTH -1 downto 0);
+    m_axis_tkeep  : out std_logic_vector((DATA_WIDTH/8) - 1 downto 0) := (others => '1');
     
     -- PMOD1 OUTPUTS
     pmod_1_01: out std_logic;
@@ -50,57 +49,43 @@ entity axi_stream_io is
 end axi_stream_io;
 
 architecture rtl of axi_stream_io is
-  signal r_fifo_reset      : std_logic;
-  signal r_write_enabled   : std_logic := '0';
-  signal r_read_enabled    : std_logic := '0';
-  signal r_fifo_read_valid : std_logic := '0';
-  signal r_fifo_full       : std_logic := '0';
-  signal r_fifo_empty      : std_logic := '0';
-  signal r_s_axis_tdata    : std_logic_vector(FIFO_WIDTH downto 0);
-  signal r_m_axis_tdata    : std_logic_vector(FIFO_WIDTH downto 0);
+  signal r_s_axis_tdata    : std_logic_vector(DATA_WIDTH - 1 downto 0);
+  signal r_m_axis_tdata    : std_logic_vector(DATA_WIDTH - 1 downto 0);
   
   signal r_led_state       : std_logic_vector(7 downto 0) := (others => '0');
+  signal r_responded       : STD_LOGIC := '0';
 begin
-  r_fifo_reset <= not aresetn;
   -- slave signals (input)
-  s_axis_tready <= '1' when r_fifo_full = '0' else '0';
-  r_write_enabled <= s_axis_tvalid;
-  r_s_axis_tdata(FIFO_WIDTH - 1 downto 0) <= s_axis_tdata(FIFO_WIDTH - 1 downto 0);
-  r_s_axis_tdata(FIFO_WIDTH) <= s_axis_tlast;
-  
-  -- master signals (output)
-  r_read_enabled <= m_axis_tready;
-  m_axis_tvalid <= r_fifo_read_valid;
-  
-  m_axis_tdata(FIFO_WIDTH - 1 downto 0) <= r_m_axis_tdata(FIFO_WIDTH - 1 downto 0);
-  m_axis_tlast <= r_m_axis_tdata(FIFO_WIDTH) when r_fifo_read_valid = '1' else '0';
+  s_axis_tready <= '1';
+  r_s_axis_tdata <= s_axis_tdata;
+    
+  m_axis_tdata <= r_m_axis_tdata;
 
-  FIFO : entity work.ring_buffer_fifo
-    generic map (
-      FIFO_WIDTH => FIFO_WIDTH + 1, -- + 1 for the tlast flag
-      FIFO_DEPTH => FIFO_DEPTH)
-    port map (
-      i_clk    => aclk,
-      i_reset => r_fifo_reset,
-      i_write_enabled => r_write_enabled,
-      i_write_data => r_s_axis_tdata,
-      -- Read port
-      i_read_enabled => r_read_enabled,
-      o_empty => r_fifo_empty,
-      o_full => r_fifo_full,
-      o_read_valid => r_fifo_read_valid,
-      o_read_data => r_m_axis_tdata);
+  p_SET_OUTPUT: process(aclk, aresetn)
+  begin
+    if aresetn = '0' then
+      r_responded <= '0';
+    elsif rising_edge(aclk) then
+      if (r_responded = '0' and m_axis_tready = '1' and s_axis_tlast = '1') then
+        m_axis_tlast <='1';
+        m_axis_tvalid <= '1';
+        r_m_axis_tdata <= x"6DDC61D4";
+        m_axis_tkeep <= (others => '1');
+        r_responded <= '1';
+      else
+        m_axis_tlast <='0';
+        m_axis_tvalid <= '0';
+        r_responded <= '0';
+      end if;  
+    end if; 
+  end process;
       
-  SET_LED: process(s_axis_tlast)
+  p_SET_LED: process(s_axis_tlast)
   begin
     -- light only one LED ata time
     if rising_edge(s_axis_tlast) then
-      if r_led_state = (r_led_state'range => '0') then
-        r_led_state <= "00000001";
-      else
-        r_led_state <= std_logic_vector( shift_left(unsigned(r_led_state), 1) );
-      end if; 
-    end if;
+      r_led_state <= r_s_axis_tdata(7 downto 0);
+    end if; 
   end process;
   
   -- Map the eight element vector to tthe PMOD ports to drive the external peripheral

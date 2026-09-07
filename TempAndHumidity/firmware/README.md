@@ -21,7 +21,7 @@ The fpga project was created in Vivado 2024.2 and the .tcl script to reproduce i
 1. Open Vivado, but do not open any project.
 1. In the Tcl console change to the appropriate directory:
 
-   cd C:/Development/KriaKR260Projects/TempAndHumidity/firmware/
+   cd C:/Development/KriaKR260Projects/TempAndHumidity/firmware
 
 1. Now recreate the project:
 
