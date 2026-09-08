@@ -7,15 +7,14 @@ uses
   mormot.core.base,  mormot.core.data,  mormot.core.os,  mormot.core.log,  mormot.core.text,  mormot.core.json,
   mormot.core.search,  mormot.core.buffers,  mormot.core.unicode,  mormot.crypt.secure,  mormot.orm.base,  mormot.orm.core,
   mormot.rest.core,  mormot.rest.server,  mormot.rest.http.server,  mormot.rest.memserver, 
-  Instruction, HygrometerData, Resolution, RxChannel, TxChannel;
+  Instruction, HygrometerData, Resolution, DisplaySetting, RxChannel, TxChannel;
 
 type
   THygrometerRestServer = class(TRestServerFullMemory)
   published
     procedure get_data(pmCtxt: TRestServerUriContext);
     procedure set_resolution(pmCtxt: TRestServerUriContext);
-    //procedure SetDisplay(pmCtxt: TRestServerUriContext);
-    //procedure SetResolution(pmCtxt: TRestServerUriContext);
+    procedure set_display(pmCtxt: TRestServerUriContext);
   end;
 
 implementation
@@ -77,6 +76,39 @@ begin
     pmCtxt.Success;
   finally
     LResolution.Free;
+  end;
+end;
+
+procedure THygrometerRestServer.set_display(pmCtxt: TRestServerUriContext);
+var
+  LInstruction: TInstruction;
+  LDisplaySetting: TDisplaySetting;
+  json_data_in: String;
+begin
+  if (pmCtxt.Method <> mPOST) then
+  begin
+     pmCtxt.Error(StringToUtf8('Only http GET allowed'), HTTP_BADREQUEST);
+     EXIT;
+  end;
+
+  json_data_in := pmCtxt.Call.InBody;
+  LDisplaySetting := TDisplaySetting.FromJson(json_data_in);
+  if (nil = LDisplaySetting) then
+  begin
+    pmCtxt.Error(StringToUtf8('Invalid Json'), HTTP_BADREQUEST);
+    EXIT;
+  end;
+
+  try
+    LInstruction := TInstruction.Create(itSetDisplay, LDisplaySetting.GetDisplaySetting);
+    try
+      SendData(LInstruction.GetInstruction)
+    finally
+      LInstruction.Free;
+    end;
+    pmCtxt.Success;
+  finally
+    LDisplaySetting.Free;
   end;
 end;
 
