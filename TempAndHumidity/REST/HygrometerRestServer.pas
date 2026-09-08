@@ -12,7 +12,7 @@ uses
 type
   THygrometerRestServer = class(TRestServerFullMemory)
   published
-    procedure GetData(pmCtxt: TRestServerUriContext);
+    procedure get_data(pmCtxt: TRestServerUriContext);
     //procedure SetDisplay(pmCtxt: TRestServerUriContext);
     //procedure SetResolution(pmCtxt: TRestServerUriContext);
   end;
@@ -21,7 +21,7 @@ implementation
 
 
 
-procedure THygrometerRestServer.GetData(pmCtxt: TRestServerUriContext);
+procedure THygrometerRestServer.get_data(pmCtxt: TRestServerUriContext);
 var
   LInstruction: TInstruction;
   LHygrometerData: THygrometerData;
@@ -40,7 +40,7 @@ begin
     LInstruction.Free;
   end;
 
-  data_read := GetData;
+  data_read := ReadData;
   LHygrometerData := THygrometerData.Create(data_read);
   try
     pmCtxt.Returns(LHygrometerData.ToJson, HTTP_SUCCESS);
