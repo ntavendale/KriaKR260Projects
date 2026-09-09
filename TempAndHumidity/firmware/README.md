@@ -162,10 +162,10 @@ Now, on the KRIA, compile pl.dtsi to .dtbo using DTC
 
 ```
 cd /home/ubuntu/development/hygrometer
-dtc -@ -O dtb -o axi_dma_demo.dtbo pl.dtsi
+dtc -@ -O dtb -o hygrometer.dtbo pl.dtsi
 ```
 
-If successful you can remove the .dtdi file and create the shell.json
+If successful you can remove the .dtsi file and create the shell.json
 
 ```
 rm pl.dtsi

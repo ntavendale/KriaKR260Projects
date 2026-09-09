@@ -65,8 +65,22 @@ begin
     pmCtxt.Error(StringToUtf8('Invalid Json'), HTTP_BADREQUEST);
     EXIT;
   end;
+  
+  case LResolution.TemperatureResolution of
+  tr11Bit: WriteLn('TemperatureResolution: 11 Bit');
+  tr14Bit: WriteLn('TemperatureResolution: 14 Bit');
+  else
+    WriteLn('TemperatureResolution: Invalid');
+  end;
 
   try
+    case LResolution.HumidityResolution of
+    hr8Bit: WriteLn('HumidityResolution:  8 Bit');
+    hr11Bit: WriteLn('HumidityResolution: 11 Bit');
+    hr14Bit: WriteLn('HumidityResolution: 14 Bit');
+    else
+      WriteLn('HumidityResolution: Invalid');
+    end;
     LInstruction := TInstruction.Create(itSetResolution, LResolution.GetResolution);
     try
       SendData(LInstruction.GetInstruction)
@@ -100,6 +114,13 @@ begin
   end;
 
   try
+    case LDisplaySetting.DisplayResolution of
+    drTemperature: WriteLn('DisplaySetting:  Temperature Resolution');
+    drHumidity: WriteLn('DisplaySetting:  Humidity Resolution');
+    else
+      WriteLn('DisplaySetting: Invalid');
+    end;
+
     LInstruction := TInstruction.Create(itSetDisplay, LDisplaySetting.GetDisplaySetting);
     try
       SendData(LInstruction.GetInstruction)
