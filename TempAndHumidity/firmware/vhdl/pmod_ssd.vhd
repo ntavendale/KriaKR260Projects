@@ -36,10 +36,9 @@ architecture rtl of pmod_ssd is
 begin
   process(bcd_value)
   begin
-    -- Segment turned on when it's value is driven LOW!
-    -- On basys 3 the seven segments of ecach display egments are labled A to G 
-    --(https://digilent.com/reference/programmable-logic/basys-3/reference-manual)
-    -- segment vector values are  GFEDCBA in the o_Segments output vector 
+    -- Segment turned on when it's value is driven HIGH! This is different form the 
+	-- seven segment display digits on the Basys3 & NexysA7 boards where the cathodes 
+	-- are driven low to light them up.
     case bcd_value is
       when "0000" => o_ssd <= "0111111"; -- "0"     
       when "0001" => o_ssd <= "0000110"; -- "1"
@@ -62,8 +61,8 @@ begin
     end case;
   end process;
   
-   -- Counting the number to be displayed on 4-digit 7-segment Display 
-  -- on Basys 3 FPGA board  
+   -- Counting the number to be displayed on 2-digit 7-segment Display 
+  -- on PMOD SSD board.  
   process (i_clk, i_resetn)
   begin
     if i_resetn = '0' then
@@ -88,12 +87,15 @@ begin
   process(anode_counter)
   begin
     -- Digit turned on when it's anode is driven LOW!
+	-- Anode signals inverted though NOT gates.
+	-- C1 <= not o_anode;
+	-- C2 <= o_anode;
     case anode_counter is
       when 0 => 
-        o_anode  <= '1'; -- C1 (Left)
+        o_anode  <= '1'; -- C1 (Left) will be 0, C2 (Right) will be 1
         bcd_value <= i_displayed(7 downto 4);
       when 1 => 
-        o_anode  <= '0'; -- C@ (Right)
+        o_anode  <= '0'; -- C2 (Right) will be 0, C1 (Left) will be 1
         bcd_value <= i_displayed(3 downto 0);
     end case;
   end process;  
