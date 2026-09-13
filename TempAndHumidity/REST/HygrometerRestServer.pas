@@ -39,7 +39,9 @@ var
   LInstruction: TInstruction;
   LHygrometerData: THygrometerData;
   data_read: Cardinal;
+  LJson: String;
 begin
+  WriteLn('Calling into get_data');
   if (pmCtxt.Method <> mGET) then
   begin
      pmCtxt.Error(StringToUtf8('Only http GET allowed'), HTTP_BADREQUEST);
@@ -47,18 +49,23 @@ begin
 
   LInstruction := TInstruction.Create(itFetch, 0);
   try
+    WriteLn('Sending Data to DMA');
     SendData(LInstruction.GetInstruction);
   finally
     LInstruction.Free;
   end;
 
+  WriteLn('Read back data from DMA');
   data_read := ReadData;
   LHygrometerData := THygrometerData.Create(data_read);
   try
-    pmCtxt.Returns(LHygrometerData.ToJson, HTTP_SUCCESS);
+    LJson := LHygrometerData.ToJson;
+    WriteLn(LJson);
+    pmCtxt.Returns(LJson, HTTP_SUCCESS);
   finally
     LHygrometerData.Free;    
   end;
+  WriteLn('get_data call completed');
 end;
 
 procedure THygrometerRestServer.set_resolution(pmCtxt: TRestServerUriContext);
@@ -67,6 +74,7 @@ var
   LResolution: TResolution;
   json_data_in: String;
 begin
+  WriteLn('Calling into set_resolution');
   if (pmCtxt.Method <> mPOST) then
   begin
      pmCtxt.Error(StringToUtf8('Only http GET allowed'), HTTP_BADREQUEST);
@@ -74,6 +82,8 @@ begin
   end;
 
   json_data_in := pmCtxt.Call.InBody;
+  WriteLn('json data: ', json_data_in);
+
   LResolution := TResolution.FromJson(json_data_in);
   if (nil = LResolution) then
   begin
@@ -82,22 +92,23 @@ begin
   end;
   
   case LResolution.TemperatureResolution of
-  tr11Bit: WriteLn('TemperatureResolution: 11 Bit');
-  tr14Bit: WriteLn('TemperatureResolution: 14 Bit');
+  tr11Bit: WriteLn('Set TemperatureResolution: 11 Bit');
+  tr14Bit: WriteLn('Set TemperatureResolution: 14 Bit');
   else
     WriteLn('TemperatureResolution: Invalid');
   end;
 
   try
     case LResolution.HumidityResolution of
-    hr8Bit: WriteLn('HumidityResolution:  8 Bit');
-    hr11Bit: WriteLn('HumidityResolution: 11 Bit');
-    hr14Bit: WriteLn('HumidityResolution: 14 Bit');
+    hr8Bit: WriteLn('Set HumidityResolution:  8 Bit');
+    hr11Bit: WriteLn('Set HumidityResolution: 11 Bit');
+    hr14Bit: WriteLn('Set HumidityResolution: 14 Bit');
     else
       WriteLn('HumidityResolution: Invalid');
     end;
     LInstruction := TInstruction.Create(itSetResolution, LResolution.GetResolution);
     try
+      WriteLn('Sending instruction data to DMA');
       SendData(LInstruction.GetInstruction)
     finally
       LInstruction.Free;
@@ -106,6 +117,7 @@ begin
   finally
     LResolution.Free;
   end;
+  WriteLn('set_resolution call completed');
 end;
 
 procedure THygrometerRestServer.set_display(pmCtxt: TRestServerUriContext);
@@ -114,6 +126,7 @@ var
   LDisplaySetting: TDisplaySetting;
   json_data_in: String;
 begin
+  WriteLn('Calling into set_display');
   if (pmCtxt.Method <> mPOST) then
   begin
      pmCtxt.Error(StringToUtf8('Only http GET allowed'), HTTP_BADREQUEST);
@@ -121,6 +134,7 @@ begin
   end;
 
   json_data_in := pmCtxt.Call.InBody;
+  WriteLn('json data: ', json_data_in);
   LDisplaySetting := TDisplaySetting.FromJson(json_data_in);
   if (nil = LDisplaySetting) then
   begin
@@ -138,7 +152,8 @@ begin
 
     LInstruction := TInstruction.Create(itSetDisplay, LDisplaySetting.GetDisplaySetting);
     try
-      SendData(LInstruction.GetInstruction)
+      WriteLn('Sending instruction data to DMA');
+      SendData(LInstruction.GetInstruction);
     finally
       LInstruction.Free;
     end;
@@ -146,6 +161,7 @@ begin
   finally
     LDisplaySetting.Free;
   end;
+  WriteLn('set_display call completed');
 end;
 
 end.
