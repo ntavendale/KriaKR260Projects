@@ -19,13 +19,17 @@ The fpga project was created in Vivado 2024.2 and the .tcl script to reproduce i
 **NOTE:** When describing the paths we use a forward slash, "/", as the path delimiter.
 
 1. Open Vivado, but do not open any project.
-1. In the Tcl console change to the appropriate directory:
+2. In the Tcl console change to the appropriate directory:
 
+```
    cd c:/Development/KriaKR260Projects/KriaAxiDma/firmware
+```
 
-1. Now recreate the project:
+3. Now recreate the project:
 
+```
    source axi_dma_demo.tcl
+```
 
 This will recreate the project, and the hdl wrapper, but you will still need to generate the output products for the block diagram.
 
@@ -64,7 +68,7 @@ Open a command prompt (cmd.exe, not PowerShell). Before using the xsct you are g
 First go to your outputs directory with your .xsa file.
 
 ```
-cd C:\Development\KriaKR260Projects\KriaAxiDma\firmware\axi_dma_demo\outputs
+cd C:\Development\KriaKR260Projects\KriaAxiDma\firmware
 ```
 
 Next run the batch file to setup your Vitis environment. You may get a file not found message. IO ignored it and everything worked just fine so you should be OK to ignore it to.
@@ -73,33 +77,10 @@ Next run the batch file to setup your Vitis environment. You may get a file not 
 C:\Xilinx\Vitis\2024.2\Settings64.bat
 ```
 
-Now you can run xsct
+Now you can run the build_outputs.tcl script in xsct. This will open a new command prompt window. When the script is finished you can press any key to close the command prompt window.
 
 ```
-C:\Xilinx\Vitis\2024.2\bin\xsct.bat
-```
-
-This should cause the command prompt to change to the xsct prompt.
-
-Generate outputs using XSCT console.
-
-**NOTE:** When describing the paths we use a forward slash, "/", as the path delimiter.
-
-```
-xsct% hsi open_hw_design C:/Development/KriaKR260Projects/KriaAxiDma/firmware/axi_dma_demo/outputs/axi_dma_demo.xsa
-
-xsct% hsi set_repo_path c:/Development/device-tree-xlnx
-
-xsct% hsi create_sw_design device-tree -os device_tree -proc psu_cortexa53_0
-
-xsct% hsi set_property CONFIG.dt_overlay true [hsi::get_os]
-
-# If ZOCL is used (Maybe for Multi Channel DMWA, but not for this demo, so you can skip this line)
-xsct% hsi set_property CONFIG.dt_zocl true [hsi::get_os]
-
-xsct% hsi generate_target -dir C:/Development/KriaKR260Projects/KriaAxiDma/firmware/axi_dma_demo/outputs
-
-xsct% hsi close_hw_design [hsi::current_hw_design]
+C:\Xilinx\Vitis\2024.2\bin\xsct build_outputs.tcl
 ```
 
 There should now be a pl.dtsi device-tree file in the generate_target directory.

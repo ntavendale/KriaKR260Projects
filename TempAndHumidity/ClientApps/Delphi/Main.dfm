@@ -2,7 +2,7 @@ object fmMain: TfmMain
   Left = 0
   Top = 0
   Caption = 'Temp & Humidity Client'
-  ClientHeight = 336
+  ClientHeight = 365
   ClientWidth = 641
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -48,9 +48,15 @@ object fmMain: TfmMain
     object lbData: TLabel
       Left = 16
       Top = 24
-      Width = 34
-      Height = 15
+      Width = 55
+      Height = 25
       Caption = 'lbData'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -19
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
       Visible = False
     end
     object btnGetData: TButton
@@ -67,30 +73,48 @@ object fmMain: TfmMain
     Left = 0
     Top = 143
     Width = 641
-    Height = 74
+    Height = 106
     Caption = 'Resolution'
     TabOrder = 2
     object Label1: TLabel
       Left = 16
       Top = 24
-      Width = 67
-      Height = 15
+      Width = 87
+      Height = 21
       Caption = 'Temperature'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
     end
     object Label2: TLabel
       Left = 192
       Top = 24
-      Width = 50
-      Height = 15
+      Width = 64
+      Height = 21
       Caption = 'Humidity'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
     end
     object cbTemperatureResolution: TComboBox
       Left = 16
-      Top = 40
+      Top = 51
       Width = 145
-      Height = 23
+      Height = 29
       Style = csDropDownList
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
       ItemIndex = 0
+      ParentFont = False
       TabOrder = 0
       Text = '14 Bit'
       Items.Strings = (
@@ -99,11 +123,17 @@ object fmMain: TfmMain
     end
     object cbHumidityResolution: TComboBox
       Left = 192
-      Top = 40
+      Top = 51
       Width = 145
-      Height = 23
+      Height = 29
       Style = csDropDownList
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
       ItemIndex = 0
+      ParentFont = False
       TabOrder = 1
       Text = '14 Bit'
       Items.Strings = (
@@ -123,18 +153,24 @@ object fmMain: TfmMain
   end
   object gb7SegDisplay: TGroupBox
     Left = 0
-    Top = 223
+    Top = 245
     Width = 641
-    Height = 66
+    Height = 81
     Caption = '7 Segment Display'
     TabOrder = 3
     object cb7Segment: TComboBox
       Left = 16
-      Top = 24
+      Top = 32
       Width = 226
-      Height = 23
+      Height = 29
       Style = csDropDownList
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
       ItemIndex = 0
+      ParentFont = False
       TabOrder = 0
       Text = 'Temperature Resolution'
       Items.Strings = (
@@ -153,7 +189,7 @@ object fmMain: TfmMain
   end
   object btnClose: TButton
     Left = 558
-    Top = 304
+    Top = 332
     Width = 75
     Height = 25
     Caption = 'Close'
