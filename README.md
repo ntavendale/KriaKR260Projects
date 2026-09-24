@@ -1,4 +1,6 @@
-# KR260Projects
+# KriaProjects
+
+Developed for KR260 Robotics Kit and/or KV260 Vision Starter Kit.
 
 ## InitialSetup
 
@@ -23,7 +25,7 @@ Project to monitor temperature and humidity via a REST service running on KR260 
 sudo xmutil listapps
 ```
 
-Eeach app has it's own folder in the /lib/firmware/xilinx directory.
+Each app has it's own folder in the /lib/firmware/xilinx directory.
 
 ## Set Default Firmware
 
